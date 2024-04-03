@@ -1,22 +1,2 @@
 syntax = "proto3";
-
-package restaurant;
-
-// The user service definition.
-service UserService {
-  rpc SignUp (SignUpRequest) returns (SignUpResponse) {}
-  // Add more methods as needed
-}
-
-// Request and response messages for the user service.
-
-message SignUpRequest {
-  string name = 1;
-  string email = 2;
-  string password = 3;
-}
-
-message SignUpResponse {
-  string userId = 1;
-  string qrCode = 2;
-}
+option go_package = "github.com/nimbolism/software-restaurant/card-service";

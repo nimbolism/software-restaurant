@@ -1,0 +1,44 @@
+syntax = "proto3";
+option go_package = "github.com/nimbolism/software-restaurant/user-service";
+
+
+// The user service definition.
+service UserService {
+  rpc SignUp (SignUpRequest) returns (SignUpResponse) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc VerifyQRCode(VerifyQRCodeRequest) returns (VerifyQRCodeResponse) {}
+  // Add more methods as needed
+}
+
+// Request and response messages for the user service.
+
+message SignUpRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message SignUpResponse {
+  string userId = 1;
+  string qrCodeUrl = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string userId = 1;
+  string jwtToken = 2;
+}
+
+message VerifyQRCodeRequest {
+  string userId = 1;
+  string qrCode = 2;
+}
+
+message VerifyQRCodeResponse {
+  bool valid = 1;
+  string message = 2;
+}
