@@ -1,0 +1,34 @@
+syntax = "proto3";
+option go_package = "github.com/nimbolism/software-restaurant/back-end/user-service/proto";
+
+// Define the User service.
+service UserService {
+    // Method to authenticate a user.
+    rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {}
+
+    // Method to retrieve user information by user ID.
+    rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+}
+
+// Request message for user authentication.
+message AuthenticateUserRequest {
+    string jwt_token = 1;
+}
+
+// Response message for user authentication.
+message AuthenticateUserResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+// Request message for retrieving user information.
+message GetUserInfoRequest {
+    string user_id = 1;
+}
+
+// Response message for user information retrieval.
+message GetUserInfoResponse {
+    string user_id = 1;
+    string username = 2;
+    // Add other user fields as needed.
+}
