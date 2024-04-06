@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/carddb"
 )
 
 func StartServer() {
@@ -19,6 +20,10 @@ func StartServer() {
 		// Return the response string
 		return c.SendString("Welcome to the Card Service!")
 	})
+	userGroup.Post("/api/photo", carddb.ProfileHandler)
+	userGroup.Post("/api/photo/new", carddb.UpdateImageHandler)
+	userGroup.Get("/api/photo", carddb.GetImageHandler)
+	userGroup.Get("/api/card", carddb.GetCardHandler)
 
 	// Start Fiber HTTP server
 	println("Starting Fiber HTTP server...")

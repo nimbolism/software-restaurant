@@ -25,7 +25,7 @@ func StartServer() {
 	userGroup.Post("/api/signup", userdb.CreateUserHandler)
 	userGroup.Post("/api/login", auth.LoginUserHandler)
 	userGroup.Get("/api/qr/login", auth.LoginQRCodeHandler)
-	userGroup.Post("/api/complete", userdb.CompleteUserHandler)
+	userGroup.Put("/api/complete", userdb.CompleteUserHandler)
 	userGroup.Post("/api/password", userdb.ChangePasswordUserHandler)
 	userGroup.Get("/api/qr/recreate", userdb.RecreateQRCodeLogin)
 	userGroup.Get("/api/user", userdb.GetUserInfo)

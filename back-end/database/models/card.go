@@ -4,8 +4,7 @@ import "gorm.io/gorm"
 
 // Card represents card data in the database
 type Card struct {
-	gorm.Model
-	Photo       string
+	gorm.Model  `gorm:"primaryKey=card_id"`
 	UserID      uint `gorm:"foreignKey:UserID"`
 	Reserves    int
 	BlackListed bool

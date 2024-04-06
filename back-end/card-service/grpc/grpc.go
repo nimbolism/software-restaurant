@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -10,10 +9,16 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/utils"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/proto"
 	"github.com/nimbolism/software-restaurant/back-end/database"
+	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/utils"
 	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+var (
+	UserServiceClient user_proto.UserServiceClient
+	userClientConn    *grpc.ClientConn
 )
 
 type Server struct {
@@ -22,78 +27,48 @@ type Server struct {
 
 // Function to get card information
 func (s *Server) GetCardInfo(ctx context.Context, req *proto.GetCardInfoRequest) (*proto.CardInfoResponse, error) {
-	// Call user-service to authenticate the user
-	userServiceClient, err := initializeGRPCClient()
+	authenticateUserResponse, err := AuthenticateUser(ctx, req.JwtToken)
 	if err != nil {
-		return &proto.CardInfoResponse{
-			Error: err.Error(),
-		}, nil
+		return nil, err
 	}
 
-	// Call the AuthenticateUser function of the user-service
-	authenticateUserResponse, err := userServiceClient.AuthenticateUser(ctx, &user_proto.AuthenticateUserRequest{JwtToken: req.JwtToken})
+	card, err := utils.FindCardByUserID(uint(authenticateUserResponse.UserId))
 	if err != nil {
-		return &proto.CardInfoResponse{
-			Error: err.Error(),
-		}, nil
+		return nil, err
 	}
 
-	// If authentication fails, populate the error field and return
-	if !authenticateUserResponse.Success {
-		return &proto.CardInfoResponse{
-			Error: authenticateUserResponse.ErrorMessage,
-		}, nil
-	}
-
-	db := database.GetPQDB()
-	card, err := utils.FindCardByUserID(db, uint(authenticateUserResponse.UserId))
-	if err != nil {
-		return &proto.CardInfoResponse{
-			Error: err.Error(),
-		}, nil
-	}
-
-	// Dummy implementation: Return hardcoded card information
 	return &proto.CardInfoResponse{
 		BlackListed: card.BlackListed,
 		AccessLevel: int32(card.AccessLevel),
 	}, nil
 }
 
-// Function to update reserves count
 func (s *Server) UpdateReserves(ctx context.Context, req *proto.UpdateReservesRequest) (*empty.Empty, error) {
-	// Call user-service to authenticate the user
-	userServiceClient, err := initializeGRPCClient()
-	if err != nil {
-		log.Fatalf("Failed to initialize gRPC client: %v", err)
-	}
-
-	// Call the AuthenticateUser function of the user-service
-	authenticateUserResponse, err := userServiceClient.AuthenticateUser(ctx, &user_proto.AuthenticateUserRequest{JwtToken: req.JwtToken})
+	authenticateUserResponse, err := AuthenticateUser(ctx, req.JwtToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// If authentication fails, return appropriate error
-	if !authenticateUserResponse.Success {
-		return nil, errors.New(authenticateUserResponse.ErrorMessage)
+	card, err := utils.FindCardByUserID(uint(authenticateUserResponse.UserId))
+	if err != nil {
+		return nil, err
 	}
 
 	db := database.GetPQDB()
-	// Find the card in the database by UserID
-	card, err := utils.FindCardByUserID(db, uint(authenticateUserResponse.UserId))
-	if err != nil {
-		return nil, err
-	}
-
-	// Update reserves count
 	card.Reserves += int(req.ReservesChange)
 	if err := db.Save(&card).Error; err != nil {
 		return nil, err
 	}
 
-	// Return empty response
 	return &empty.Empty{}, nil
+}
+
+func AuthenticateUser(ctx context.Context, jwtToken string) (*user_proto.AuthenticateUserResponse, error) {
+	if err := InitializeGRPCClient(); err != nil {
+		log.Fatalf("Failed to initialize gRPC client: %v", err)
+	}
+
+	return UserServiceClient.AuthenticateUser(ctx, &user_proto.AuthenticateUserRequest{JwtToken: jwtToken})
 }
 
 func StartServer() {
@@ -109,15 +84,25 @@ func StartServer() {
 	}
 }
 
-func initializeGRPCClient() (user_proto.UserServiceClient, error) {
-	// Set up a connection to the gRPC server
-	conn, err := grpc.Dial("localhost:50050", grpc.WithInsecure())
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
+func InitializeGRPCClient() error {
+	// Set up a connection to the gRPC server if not already initialized
+	if UserServiceClient == nil {
+		// Create a connection to the gRPC server
+		conn, err := grpc.NewClient("user-service:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return fmt.Errorf("failed to connect to gRPC server: %v", err)
+		}
 
-	// Create a client for the CardService
-	client := user_proto.NewUserServiceClient(conn)
-	return client, nil
+		// Create a client for the UserService
+		UserServiceClient = user_proto.NewUserServiceClient(conn)
+		userClientConn = conn
+	}
+
+	return nil
+}
+
+func CloseGRPCClient() {
+	if userClientConn != nil {
+		userClientConn.Close()
+	}
 }

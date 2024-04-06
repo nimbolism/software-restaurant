@@ -41,7 +41,6 @@ func (s *Server) AuthenticateUser(ctx context.Context, req *proto.AuthenticateUs
 		Success: true,
 	}, nil
 }
-
 func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest) (*proto.GetUserInfoResponse, error) {
 	cookie := req.JwtToken
 	username, err := auth.GetUsernameFromJWT(cookie)
