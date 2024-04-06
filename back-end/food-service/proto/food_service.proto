@@ -1,0 +1,45 @@
+syntax = "proto3";
+option go_package = "github.com/nimbolism/software-restaurant/back-end/food-service/proto";
+
+import "google/protobuf/timestamp.proto";
+
+service FoodService {
+  rpc GetFoodDetailsById (FoodIdRequest) returns (Food);
+  rpc GetSideDishDetailsById (SideDishIdRequest) returns (SideDish);
+}
+
+message Food {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;
+  string meal = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  string error_message = 8;
+}
+
+message SideDish {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  string error_message = 6;
+}
+
+message FoodNotFoundError {
+  string message = 1;
+}
+
+message SideDishNotFoundError {
+  string message = 1;
+}
+
+message FoodIdRequest {
+  int64 food_id = 1;
+}
+
+message SideDishIdRequest {
+  int64 side_dish_id = 1;
+}
