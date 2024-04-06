@@ -8,6 +8,8 @@ service UserService {
 
     // Method to retrieve user information by user ID.
     rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+
+    rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse) {}
 }
 
 // Request message for user authentication.
@@ -17,18 +19,38 @@ message AuthenticateUserRequest {
 
 // Response message for user authentication.
 message AuthenticateUserResponse {
-    bool success = 1;
-    string error_message = 2;
+    uint64 userId = 1;
+    bool success = 2;
+    string error_message = 3;
 }
 
 // Request message for retrieving user information.
 message GetUserInfoRequest {
-    string user_id = 1;
+    string jwt_token = 1;
 }
 
 // Response message for user information retrieval.
 message GetUserInfoResponse {
-    string user_id = 1;
-    string username = 2;
-    // Add other user fields as needed.
+    string username = 1;
+    string email = 2;
+    string phone_number = 3;
+    string national_code = 4;
+    string error_message = 5; 
+}
+
+message GetAllUsersRequest{
+    string jwt_token = 1;
+}
+
+message GetAllUsersResponse {
+    repeated UserData users = 1;
+    string error_message = 5; 
+}
+
+// Definition of a user data.
+message UserData {
+    string username = 1;
+    string email = 2;
+    string phone_number = 3;
+    string national_code = 4;
 }

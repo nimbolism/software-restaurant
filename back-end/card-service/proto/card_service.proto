@@ -1,2 +1,33 @@
 syntax = "proto3";
-option go_package = "github.com/nimbolism/software-restaurant/card-service";
+option go_package = "github.com/nimbolism/software-restaurant/back-end/card-service/proto";
+
+
+// Import the necessary types from the google/protobuf package
+import "google/protobuf/empty.proto";
+
+// Card service definition
+service CardService {
+    // GetCardInfo returns information about a card, including access level and blacklisted status.
+    rpc GetCardInfo(GetCardInfoRequest) returns (CardInfoResponse);
+
+    // UpdateReserves updates the reserves count of a card.
+    rpc UpdateReserves(UpdateReservesRequest) returns (google.protobuf.Empty);
+}
+
+// Request message to get card information
+message GetCardInfoRequest {
+    string jwt_token = 1;
+}
+
+// Response message containing card information
+message CardInfoResponse {
+    bool black_listed = 1;
+    int32 access_level = 2;
+    string error = 3;
+}
+
+// Request message to update reserves count
+message UpdateReservesRequest {
+    string jwt_token = 1;
+    int32 reserves_change = 2; // Positive or negative number to increase or decrease reserves
+}
