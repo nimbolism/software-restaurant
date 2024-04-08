@@ -6,11 +6,18 @@ import (
 	"log"
 	"net"
 
+	card_proto "github.com/nimbolism/software-restaurant/back-end/card-service/proto"
 	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+var (
+	CardServiceClient card_proto.CardServiceClient
+	cardClientConn    *grpc.ClientConn
 )
 
 type Server struct {
@@ -89,5 +96,28 @@ func StartServer() {
 	proto.RegisterFoodServiceServer(s, &Server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func InitializeGRPCClient() error {
+	// Set up a connection to the gRPC server if not already initialized
+	if CardServiceClient == nil {
+		// Create a connection to the gRPC server
+		conn, err := grpc.NewClient("card-service:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return fmt.Errorf("failed to connect to gRPC server: %v", err)
+		}
+
+		// Create a client for the UserService
+		CardServiceClient = card_proto.NewCardServiceClient(conn)
+		cardClientConn = conn
+	}
+
+	return nil
+}
+
+func CloseGRPCClient() {
+	if cardClientConn != nil {
+		cardClientConn.Close()
 	}
 }

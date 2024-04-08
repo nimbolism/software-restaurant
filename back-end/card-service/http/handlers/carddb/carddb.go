@@ -2,81 +2,27 @@ package carddb
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/grpc"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/utils"
 	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
-
-	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 )
 
 func ProfileHandler(c *fiber.Ctx) error {
-	cookie := gutils.GetCookie(c, "jwt")
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "JWT cookie not found"})
-	}
-
-	if err := grpc.InitializeGRPCClient(); err != nil {
-		log.Fatalf("Failed to initialize gRPC client: %v", err)
-	}
-
-	// Call the AuthenticateUser function of the user-service
-	authenticateUserResponse, err := grpc.AuthenticateUser(context.Background(), cookie)
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to authenticate user via gRPC")
+		return err
 	}
 
-	// If authentication fails, populate the error field and return
-	if !authenticateUserResponse.Success {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": authenticateUserResponse.ErrorMessage})
-	}
-
-	var body map[string]string
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to parse JSON body")
-	}
-
-	// Get the Base64 image from the JSON body
-	base64Image, ok := body["image"]
-	if !ok {
-		return c.Status(fiber.StatusBadRequest).SendString("No image in JSON body")
-	}
-
-	base64Image = strings.SplitN(base64Image, ",", 2)[1]
-	// Decode the Base64 image
-	imageData, err := base64.StdEncoding.DecodeString(base64Image)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to decode Base64 image")
-	}
-
-	// Compress the image to 50KB
-	compressedImageData, err := utils.CompressImage(imageData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to compress image")
-	}
-
-	// Generate a secure filename
-	filename := fmt.Sprintf("%d.jpg", authenticateUserResponse.UserId)
-
-	// Specify the directory where images will be stored (make sure this directory exists)
-	storageDir := "./uploads"
-	err = os.MkdirAll(storageDir, os.ModePerm)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to create storage directory")
-	}
-
-	// Save the image to a secure file
-	err = os.WriteFile(filepath.Join(storageDir, filename), compressedImageData, 0644)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to save image to file")
+	if err := utils.HandleImageUpload(c, authenticateUserResponse); err != nil {
+		return err
 	}
 
 	// Create a new card record
@@ -84,6 +30,7 @@ func ProfileHandler(c *fiber.Ctx) error {
 		UserID:      uint(authenticateUserResponse.UserId),
 		Reserves:    0,
 		BlackListed: false,
+		Verified:    false,
 		AccessLevel: 1,
 	}
 	db := database.GetPQDB()
@@ -95,85 +42,22 @@ func ProfileHandler(c *fiber.Ctx) error {
 }
 
 func UpdateImageHandler(c *fiber.Ctx) error {
-	cookie := gutils.GetCookie(c, "jwt")
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "JWT cookie not found"})
-	}
-
-	if err := grpc.InitializeGRPCClient(); err != nil {
-		log.Fatalf("Failed to initialize gRPC client: %v", err)
-	}
-
-	// Call the AuthenticateUser function of the user-service
-	authenticateUserResponse, err := grpc.AuthenticateUser(context.Background(), cookie)
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to authenticate user via gRPC")
+		return err
 	}
 
-	// If authentication fails, populate the error field and return
-	if !authenticateUserResponse.Success {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": authenticateUserResponse.ErrorMessage})
-	}
-
-	var body map[string]string
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to parse JSON body")
-	}
-
-	// Get the Base64 image from the JSON body
-	base64Image, ok := body["image"]
-	if !ok {
-		return c.Status(fiber.StatusBadRequest).SendString("No image in JSON body")
-	}
-
-	base64Image = strings.SplitN(base64Image, ",", 2)[1]
-	// Decode the Base64 image
-	imageData, err := base64.StdEncoding.DecodeString(base64Image)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to decode Base64 image")
-	}
-
-	// Compress the image to 50KB
-	compressedImageData, err := utils.CompressImage(imageData)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to compress image")
-	}
-
-	// Generate a secure filename
-	filename := fmt.Sprintf("%d.jpg", authenticateUserResponse.UserId)
-
-	// Specify the directory where images will be stored (make sure this directory exists)
-	storageDir := "./uploads"
-
-	// Save the updated image to a secure file, overwriting the existing image
-	err = os.WriteFile(filepath.Join(storageDir, filename), compressedImageData, 0644)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to update image")
+	if err := utils.HandleImageUpload(c, authenticateUserResponse); err != nil {
+		return err
 	}
 
 	return c.SendString("Image updated successfully")
 }
 
-
 func GetImageHandler(c *fiber.Ctx) error {
-	cookie := gutils.GetCookie(c, "jwt")
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "JWT cookie not found"})
-	}
-
-	if err := grpc.InitializeGRPCClient(); err != nil {
-		log.Fatalf("Failed to initialize gRPC client: %v", err)
-	}
-
-	// Call the AuthenticateUser function of the user-service
-	authenticateUserResponse, err := grpc.AuthenticateUser(context.Background(), cookie)
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Failed to authenticate user via gRPC: %v", err))
-	}
-
-	// If authentication fails, populate the error field and return
-	if !authenticateUserResponse.Success {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
+		return err
 	}
 
 	// Specify the directory where images are stored
@@ -192,15 +76,9 @@ func GetImageHandler(c *fiber.Ctx) error {
 }
 
 func GetCardHandler(c *fiber.Ctx) error {
-	cookie := gutils.GetCookie(c, "jwt")
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "JWT cookie not found"})
-	}
-
-	// Authenticate user via gRPC (you can reuse the existing function)
-	authenticateUserResponse, err := grpc.AuthenticateUser(context.Background(), cookie)
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("Failed to authenticate user via gRPC: %v", err)})
+		return err
 	}
 
 	// Retrieve card information for the authenticated user
@@ -211,8 +89,55 @@ func GetCardHandler(c *fiber.Ctx) error {
 	response := map[string]interface{}{
 		"reserves":     card.Reserves,
 		"blacklisted":  card.BlackListed,
+		"verified":     card.Verified,
 		"access_level": card.AccessLevel,
 	}
 
 	return c.JSON(response)
+}
+
+func GiveAccessLevel(c *fiber.Ctx) error {
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
+	if err != nil {
+		return err
+	}
+
+	// Retrieve card information for the authenticated user
+	card, err := utils.FindCardByUserID(uint(authenticateUserResponse.UserId))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve card information"})
+	}
+
+	userAccessLevel := card.AccessLevel
+	if err := grpc.InitializeGRPCClient(); err != nil {
+		log.Fatalf("Failed to initialize gRPC client: %v", err)
+	}
+
+	var reqBody struct {
+		Username string `json:"username"`
+	}
+	if err := c.BodyParser(&reqBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to decode request body"})
+	}
+
+	req, err := grpc.UserServiceClient.GetOneUser(context.Background(), &user_proto.GetOneUserRequest{Username: reqBody.Username})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v, service: %v", err.Error(), req.ErrorMessage)})
+	}
+
+	reqCard, err := utils.FindCardByUserID(uint(req.UserId))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
+	}
+
+	if userAccessLevel >= reqCard.AccessLevel { //change this and remove equal
+		reqCard.AccessLevel++
+		db := database.GetPQDB()
+		err = db.Save(reqCard).Error
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to update card information"})
+		}
+	}
+
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": "successfully updated card access level"})
 }

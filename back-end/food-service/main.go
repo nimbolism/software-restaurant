@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/grpc"
@@ -31,6 +34,17 @@ func main() {
 
 	// Start HTTP server
 	go http.StartServer()
+
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+		<-sigint
+
+		// Close the gRPC client connection when the server is shutting down
+		grpc.CloseGRPCClient()
+
+		os.Exit(0)
+	}()
 
 	// Keep the main function running
 	select {}

@@ -8,7 +8,8 @@ type Card struct {
 	UserID      uint `gorm:"foreignKey:UserID"`
 	Reserves    int
 	BlackListed bool
-	AccessLevel int
+	Verified    bool // states who can reserve
+	AccessLevel int  // 1 => ordinary, 2 => helper, 3 => admin
 }
 
 func (c *Card) BeforeSave(tx *gorm.DB) (err error) {

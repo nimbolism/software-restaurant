@@ -10,6 +10,8 @@ service UserService {
     rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
 
     rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse) {}
+
+    rpc GetOneUser(GetOneUserRequest) returns (GetOneUserResponse) {}
 }
 
 // Request message for user authentication.
@@ -31,11 +33,8 @@ message GetUserInfoRequest {
 
 // Response message for user information retrieval.
 message GetUserInfoResponse {
-    string username = 1;
-    string email = 2;
-    string phone_number = 3;
-    string national_code = 4;
-    string error_message = 5; 
+    UserData user_data = 1;
+    string error_message = 2; 
 }
 
 message GetAllUsersRequest{
@@ -53,4 +52,12 @@ message UserData {
     string email = 2;
     string phone_number = 3;
     string national_code = 4;
+}
+
+message GetOneUserRequest {
+    string username = 1;
+}
+message GetOneUserResponse {
+    uint64 userId = 1;
+    string error_message = 2;
 }

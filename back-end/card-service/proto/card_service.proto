@@ -22,8 +22,9 @@ message GetCardInfoRequest {
 // Response message containing card information
 message CardInfoResponse {
     bool black_listed = 1;
-    int32 access_level = 2;
-    string error = 3;
+    bool verified = 2;
+    int32 access_level = 3;
+    string error = 4;
 }
 
 // Request message to update reserves count

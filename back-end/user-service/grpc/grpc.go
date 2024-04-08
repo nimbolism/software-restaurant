@@ -59,10 +59,13 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 	}
 
 	return &proto.GetUserInfoResponse{
-		Username:     existingUser.Username,
-		Email:        existingUser.Email,
-		PhoneNumber:  existingUser.PhoneNumber,
-		NationalCode: existingUser.PhoneNumber,
+		UserData: &proto.UserData{
+			Username:     existingUser.Username,
+			Email:        existingUser.Email,
+			PhoneNumber:  existingUser.PhoneNumber,
+			NationalCode: existingUser.NationalCode,
+		},
+		ErrorMessage: "",
 	}, nil
 }
 
@@ -86,6 +89,19 @@ func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest)
 	}
 
 	return &proto.GetAllUsersResponse{Users: userData}, nil
+}
+
+func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (*proto.GetOneUserResponse, error) {
+	db := database.GetPQDB()
+	reqUser, err := utils.GetExistingUser(db, req.Username)
+	if err != nil {
+		return &proto.GetOneUserResponse{
+			ErrorMessage: "Invalid username",
+		}, nil
+	}
+	return &proto.GetOneUserResponse{
+		UserId: uint64(reqUser.ID),
+	}, nil
 }
 
 func StartServer() {

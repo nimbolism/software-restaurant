@@ -215,14 +215,13 @@ func GetUserInfo(c *fiber.Ctx) error {
 	}
 
 	userInfo := fiber.Map{
-        "username": existingUser.Username,
-        "email": existingUser.Email,
-        "qr_code": existingUser.QRCode,
-        "phone_number": existingUser.PhoneNumber,
-        "national_code": existingUser.NationalCode,
-        // Add other fields you want to include
-    }
-
+		"username":      existingUser.Username,
+		"email":         existingUser.Email,
+		"qr_code":       existingUser.QRCode,
+		"phone_number":  existingUser.PhoneNumber,
+		"national_code": existingUser.NationalCode,
+		// Add other fields you want to include
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"user": userInfo})
 }

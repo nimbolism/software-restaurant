@@ -22,13 +22,14 @@ func StartServer() {
 		return c.SendString("Welcome to the User Service!")
 	})
 
-	userGroup.Post("/api/signup", userdb.CreateUserHandler)
-	userGroup.Post("/api/login", auth.LoginUserHandler)
-	userGroup.Get("/api/qr/login", auth.LoginQRCodeHandler)
-	userGroup.Put("/api/complete", userdb.CompleteUserHandler)
-	userGroup.Post("/api/password", userdb.ChangePasswordUserHandler)
-	userGroup.Get("/api/qr/recreate", userdb.RecreateQRCodeLogin)
-	userGroup.Get("/api/user", userdb.GetUserInfo)
+	userApis := userGroup.Group("/api")
+	userApis.Post("/signup", userdb.CreateUserHandler)
+	userApis.Post("/login", auth.LoginUserHandler)
+	userApis.Get("/qr/login", auth.LoginQRCodeHandler)
+	userApis.Put("/complete", userdb.CompleteUserHandler)
+	userApis.Post("/password", userdb.ChangePasswordUserHandler)
+	userApis.Get("/qr/recreate", userdb.RecreateQRCodeLogin)
+	userApis.Get("/user", userdb.GetUserInfo)
 
 	// Start Fiber HTTP server
 	println("Starting Fiber HTTP server...")
