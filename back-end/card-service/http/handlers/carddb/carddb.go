@@ -122,7 +122,7 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 
 	req, err := grpc.UserServiceClient.GetOneUser(context.Background(), &user_proto.GetOneUserRequest{Username: reqBody.Username})
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v, service: %v", err.Error(), req.ErrorMessage)})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
 	}
 
 	reqCard, err := utils.FindCardByUserID(uint(req.UserId))

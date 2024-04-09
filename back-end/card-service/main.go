@@ -29,6 +29,11 @@ func main() {
 		}
 	}()
 
+	// Initialize the gRPC client connection
+	if err := grpc.InitializeGRPCClient(); err != nil {
+		log.Fatalf("Failed to initialize gRPC client: %v", err)
+	}
+
 	// Start gRPC server
 	go grpc.StartServer()
 

@@ -11,6 +11,8 @@ import (
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/utils"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
 )
 
 type Server struct {
@@ -21,19 +23,17 @@ func (s *Server) AuthenticateUser(ctx context.Context, req *proto.AuthenticateUs
 	cookie := req.JwtToken
 	username, err := auth.GetUsernameFromJWT(cookie)
 	if err != nil {
-		return &proto.AuthenticateUserResponse{
-			Success:      false,
-			ErrorMessage: "Invalid credentials",
-		}, nil
+		return nil, status.Error(
+			codes.PermissionDenied, "Invalid credentials",
+		)
 	}
 
 	db := database.GetPQDB()
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
-		return &proto.AuthenticateUserResponse{
-			Success:      false,
-			ErrorMessage: "Invalid credentials ",
-		}, nil
+		return nil, status.Error(
+			codes.NotFound, "Such user does not exist",
+		)
 	}
 
 	return &proto.AuthenticateUserResponse{
@@ -45,17 +45,17 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 	cookie := req.JwtToken
 	username, err := auth.GetUsernameFromJWT(cookie)
 	if err != nil {
-		return &proto.GetUserInfoResponse{
-			ErrorMessage: "Invalid credentials",
-		}, nil
+		return nil, status.Error(
+			codes.PermissionDenied, "Invalid credentials",
+		)
 	}
 
 	db := database.GetPQDB()
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
-		return &proto.GetUserInfoResponse{
-			ErrorMessage: "Invalid credentials",
-		}, nil
+		return nil, status.Error(
+			codes.NotFound, "Such user does not exist",
+		)
 	}
 
 	return &proto.GetUserInfoResponse{
@@ -65,7 +65,6 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 			PhoneNumber:  existingUser.PhoneNumber,
 			NationalCode: existingUser.NationalCode,
 		},
-		ErrorMessage: "",
 	}, nil
 }
 
@@ -73,9 +72,9 @@ func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest)
 	var users []models.User
 	db := database.GetPQDB()
 	if err := db.Find(&users).Error; err != nil {
-		return &proto.GetAllUsersResponse{
-			ErrorMessage: "Error in database",
-		}, nil
+		return nil, status.Error(
+			codes.Internal, "Cannot get users from database",
+		)
 	}
 
 	var userData []*proto.UserData
@@ -95,9 +94,9 @@ func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (
 	db := database.GetPQDB()
 	reqUser, err := utils.GetExistingUser(db, req.Username)
 	if err != nil {
-		return &proto.GetOneUserResponse{
-			ErrorMessage: "Invalid username",
-		}, nil
+		return nil, status.Error(
+			codes.NotFound, "Such user does not exist",
+		)
 	}
 	return &proto.GetOneUserResponse{
 		UserId: uint64(reqUser.ID),

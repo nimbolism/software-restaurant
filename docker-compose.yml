@@ -30,6 +30,7 @@ services:
       - "50051:50051"
     depends_on:
       - postgres
+      - user-service
     networks:
       - backend
       - postgres-access
@@ -47,6 +48,7 @@ services:
       - "50052:50052"
     depends_on:
       - postgres
+      - card-service
     networks:
       - backend
       - postgres-access

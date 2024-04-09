@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FoodService_GetFoodDetailsById_FullMethodName     = "/FoodService/GetFoodDetailsById"
-	FoodService_GetSideDishDetailsById_FullMethodName = "/FoodService/GetSideDishDetailsById"
+	FoodService_GetFoodDetailsByName_FullMethodName     = "/FoodService/GetFoodDetailsByName"
+	FoodService_GetSideDishDetailsByName_FullMethodName = "/FoodService/GetSideDishDetailsByName"
 )
 
 // FoodServiceClient is the client API for FoodService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FoodServiceClient interface {
-	GetFoodDetailsById(ctx context.Context, in *FoodIdRequest, opts ...grpc.CallOption) (*Food, error)
-	GetSideDishDetailsById(ctx context.Context, in *SideDishIdRequest, opts ...grpc.CallOption) (*SideDish, error)
+	GetFoodDetailsByName(ctx context.Context, in *FoodIdRequest, opts ...grpc.CallOption) (*Food, error)
+	GetSideDishDetailsByName(ctx context.Context, in *SideDishIdRequest, opts ...grpc.CallOption) (*SideDish, error)
 }
 
 type foodServiceClient struct {
@@ -39,18 +39,18 @@ func NewFoodServiceClient(cc grpc.ClientConnInterface) FoodServiceClient {
 	return &foodServiceClient{cc}
 }
 
-func (c *foodServiceClient) GetFoodDetailsById(ctx context.Context, in *FoodIdRequest, opts ...grpc.CallOption) (*Food, error) {
+func (c *foodServiceClient) GetFoodDetailsByName(ctx context.Context, in *FoodIdRequest, opts ...grpc.CallOption) (*Food, error) {
 	out := new(Food)
-	err := c.cc.Invoke(ctx, FoodService_GetFoodDetailsById_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, FoodService_GetFoodDetailsByName_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foodServiceClient) GetSideDishDetailsById(ctx context.Context, in *SideDishIdRequest, opts ...grpc.CallOption) (*SideDish, error) {
+func (c *foodServiceClient) GetSideDishDetailsByName(ctx context.Context, in *SideDishIdRequest, opts ...grpc.CallOption) (*SideDish, error) {
 	out := new(SideDish)
-	err := c.cc.Invoke(ctx, FoodService_GetSideDishDetailsById_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, FoodService_GetSideDishDetailsByName_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +61,8 @@ func (c *foodServiceClient) GetSideDishDetailsById(ctx context.Context, in *Side
 // All implementations must embed UnimplementedFoodServiceServer
 // for forward compatibility
 type FoodServiceServer interface {
-	GetFoodDetailsById(context.Context, *FoodIdRequest) (*Food, error)
-	GetSideDishDetailsById(context.Context, *SideDishIdRequest) (*SideDish, error)
+	GetFoodDetailsByName(context.Context, *FoodIdRequest) (*Food, error)
+	GetSideDishDetailsByName(context.Context, *SideDishIdRequest) (*SideDish, error)
 	mustEmbedUnimplementedFoodServiceServer()
 }
 
@@ -70,11 +70,11 @@ type FoodServiceServer interface {
 type UnimplementedFoodServiceServer struct {
 }
 
-func (UnimplementedFoodServiceServer) GetFoodDetailsById(context.Context, *FoodIdRequest) (*Food, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFoodDetailsById not implemented")
+func (UnimplementedFoodServiceServer) GetFoodDetailsByName(context.Context, *FoodIdRequest) (*Food, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFoodDetailsByName not implemented")
 }
-func (UnimplementedFoodServiceServer) GetSideDishDetailsById(context.Context, *SideDishIdRequest) (*SideDish, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSideDishDetailsById not implemented")
+func (UnimplementedFoodServiceServer) GetSideDishDetailsByName(context.Context, *SideDishIdRequest) (*SideDish, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSideDishDetailsByName not implemented")
 }
 func (UnimplementedFoodServiceServer) mustEmbedUnimplementedFoodServiceServer() {}
 
@@ -89,38 +89,38 @@ func RegisterFoodServiceServer(s grpc.ServiceRegistrar, srv FoodServiceServer) {
 	s.RegisterService(&FoodService_ServiceDesc, srv)
 }
 
-func _FoodService_GetFoodDetailsById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FoodService_GetFoodDetailsByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FoodIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FoodServiceServer).GetFoodDetailsById(ctx, in)
+		return srv.(FoodServiceServer).GetFoodDetailsByName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FoodService_GetFoodDetailsById_FullMethodName,
+		FullMethod: FoodService_GetFoodDetailsByName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FoodServiceServer).GetFoodDetailsById(ctx, req.(*FoodIdRequest))
+		return srv.(FoodServiceServer).GetFoodDetailsByName(ctx, req.(*FoodIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _FoodService_GetSideDishDetailsById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FoodService_GetSideDishDetailsByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SideDishIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FoodServiceServer).GetSideDishDetailsById(ctx, in)
+		return srv.(FoodServiceServer).GetSideDishDetailsByName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FoodService_GetSideDishDetailsById_FullMethodName,
+		FullMethod: FoodService_GetSideDishDetailsByName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FoodServiceServer).GetSideDishDetailsById(ctx, req.(*SideDishIdRequest))
+		return srv.(FoodServiceServer).GetSideDishDetailsByName(ctx, req.(*SideDishIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -133,12 +133,12 @@ var FoodService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FoodServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetFoodDetailsById",
-			Handler:    _FoodService_GetFoodDetailsById_Handler,
+			MethodName: "GetFoodDetailsByName",
+			Handler:    _FoodService_GetFoodDetailsByName_Handler,
 		},
 		{
-			MethodName: "GetSideDishDetailsById",
-			Handler:    _FoodService_GetSideDishDetailsById_Handler,
+			MethodName: "GetSideDishDetailsByName",
+			Handler:    _FoodService_GetSideDishDetailsByName_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

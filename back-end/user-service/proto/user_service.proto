@@ -23,7 +23,6 @@ message AuthenticateUserRequest {
 message AuthenticateUserResponse {
     uint64 userId = 1;
     bool success = 2;
-    string error_message = 3;
 }
 
 // Request message for retrieving user information.
@@ -34,7 +33,6 @@ message GetUserInfoRequest {
 // Response message for user information retrieval.
 message GetUserInfoResponse {
     UserData user_data = 1;
-    string error_message = 2; 
 }
 
 message GetAllUsersRequest{
@@ -43,7 +41,6 @@ message GetAllUsersRequest{
 
 message GetAllUsersResponse {
     repeated UserData users = 1;
-    string error_message = 5; 
 }
 
 // Definition of a user data.
@@ -59,5 +56,4 @@ message GetOneUserRequest {
 }
 message GetOneUserResponse {
     uint64 userId = 1;
-    string error_message = 2;
 }

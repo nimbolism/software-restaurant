@@ -11,7 +11,9 @@ import (
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -24,26 +26,26 @@ type Server struct {
 	proto.UnimplementedFoodServiceServer
 }
 
-func (s *Server) GetFoodDetailsById(ctx context.Context, req *proto.FoodIdRequest) (*proto.Food, error) {
+func (s *Server) GetFoodDetailsByName(ctx context.Context, req *proto.FoodIdRequest) (*proto.Food, error) {
 	db := database.GetPQDB()
 	var food models.Food
-	if err := db.First(&food, req.FoodId).Error; err != nil {
-		return &proto.Food{
-			ErrorMessage: fmt.Sprintf("Food with ID %d not found: %v", req.FoodId, err),
-		}, nil
+	if err := db.Where("name = ?", req.FoodName).First(&food).Error; err != nil {
+		return nil, status.Error(
+			codes.NotFound, fmt.Sprintf("Food with name %s not found: %v", req.FoodName, err),
+		)
 	}
 
 	var meal models.Meal
 	if err := db.First(&meal, food.MealID).Error; err != nil {
-		return &proto.Food{
-			ErrorMessage: fmt.Sprintf("meal with ID %d not found: %v", food.MealID, err),
-		}, nil
+		return nil, status.Error(
+			codes.NotFound, fmt.Sprintf("meal with ID %d not found: %v", food.MealID, err),
+		)
 	}
 	var category models.Category
 	if err := db.First(&category, food.CategoryID).Error; err != nil {
-		return &proto.Food{
-			ErrorMessage: fmt.Sprintf("category with ID %d not found: %v", food.CategoryID, err),
-		}, nil
+		return nil, status.Error(
+			codes.NotFound, fmt.Sprintf("category with ID %d not found: %v", food.CategoryID, err),
+		)
 	}
 
 	// Convert database food model to protobuf message
@@ -63,13 +65,13 @@ func (s *Server) GetFoodDetailsById(ctx context.Context, req *proto.FoodIdReques
 	return foodPB, nil
 }
 
-func (s *Server) GetSideDishDetailsById(ctx context.Context, req *proto.SideDishIdRequest) (*proto.SideDish, error) {
+func (s *Server) GetSideDishDetailsByName(ctx context.Context, req *proto.SideDishIdRequest) (*proto.SideDish, error) {
 	db := database.GetPQDB()
 	var sideDish models.SideDish
-	if err := db.First(&sideDish, req.SideDishId).Error; err != nil {
-		return &proto.SideDish{
-			ErrorMessage: fmt.Sprintf("Food with ID %d not found: %v", req.SideDishId, err),
-		}, nil
+	if err := db.Where("name = ?", req.SideDishName).First(&sideDish).Error; err != nil {
+		return nil, status.Error(
+			codes.NotFound, fmt.Sprintf("side dish with name %s not found: %v", req.SideDishName, err),
+		)
 	}
 
 	// Convert database side dish model to protobuf message
