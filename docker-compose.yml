@@ -54,6 +54,44 @@ services:
       - postgres-access
     restart: unless-stopped
 
+# Order Service
+  order-service:
+    container_name: order-service-container
+    build:
+      context: .
+      dockerfile: back-end/order-service/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "50053:50053"
+    depends_on:
+      - postgres
+      - user-service
+      - card-service
+      - food-service
+    networks:
+      - backend
+      - postgres-access
+    restart: unless-stopped
+
+  # Order Service
+  voucher-service:
+    container_name: voucher-service-container
+    build:
+      context: .
+      dockerfile: back-end/voucher-service/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "50054:50054"
+    depends_on:
+      - redis-database
+      - order-service
+    networks:
+      - backend
+      - redis-access
+    restart: unless-stopped
+
   # Nginx Service
   nginx:
     container_name: nginx-service-container
@@ -66,6 +104,8 @@ services:
       - user-service
       - card-service
       - food-service
+      - order-service
+      - voucher-service
     networks:
       - backend
     restart: unless-stopped
@@ -91,10 +131,16 @@ services:
     restart: unless-stopped
     volumes:
       - "redis-data:/data"
+      - "./redis.conf:/usr/local/etc/redis/redis.conf"
+    command: redis-server /usr/local/etc/redis/redis.conf
     env_file:
       - .env
+    ports:
+      - "6379:6379"
+    hostname: redis-database
     networks:
       - redis-access
+
 
 networks:
   backend:

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option go_package = "github.com/nimbolism/software-restaurant/order-service/proto";
+
+// Import the necessary packages
+import "google/protobuf/timestamp.proto";
+
+// Define the message types
+message Order {
+  uint64 id = 1;
+  uint64 user_id = 2;
+  repeated Food foods = 3;
+  repeated SideDish side_dishes = 4;
+  bool paid = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message Food {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string category_name = 4;
+  string meal_name = 5;
+}
+
+message SideDish {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+// Define the service
+service VoucherService {
+  rpc StoreOrderDetails(StoreOrderDetailsRequest) returns (StoreOrderDetailsResponse);
+  rpc RetrieveOrderDetails(RetrieveOrderDetailsRequest) returns (RetrieveOrderDetailsResponse);
+  rpc GetAllOrders(GetAllOrdersRequest) returns (GetAllOrdersResponse);
+}
+
+// Define request and response messages for storing order details
+message StoreOrderDetailsRequest {
+  Order order = 1;
+}
+
+message StoreOrderDetailsResponse {
+  bool success = 1;
+}
+
+// Define request and response messages for retrieving order details
+message RetrieveOrderDetailsRequest {
+  string jwt_token = 1;
+  uint64 order_id = 2;
+}
+
+message RetrieveOrderDetailsResponse {
+  Order order = 1;
+}
+
+// Define request and response messages for retrieving all orders
+message GetAllOrdersRequest {
+  string jwt_token = 1;
+}
+
+message GetAllOrdersResponse {
+  repeated Order orders = 1;
+}

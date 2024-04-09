@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/nimbolism/software-restaurant/order-service";
+option go_package = "github.com/nimbolism/software-restaurant/order-service/proto";
 
 // Import the necessary packages
 import "google/protobuf/timestamp.proto";
@@ -8,14 +8,14 @@ import "google/protobuf/timestamp.proto";
 message Order {
   uint64 id = 1;
   uint64 user_id = 2;
-  repeated Food foods = 3;
-  repeated SideDish side_dishes = 4;
+  repeated OrderFood foods = 3;
+  repeated OrderSideDish side_dishes = 4;
   bool paid = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
 }
 
-message Food {
+message OrderFood {
   int64 id = 1;
   string name = 2;
   string description = 3;
@@ -23,7 +23,7 @@ message Food {
   string meal_name = 5;     // Add this field
 }
 
-message SideDish {
+message OrderSideDish {
   int64 id = 1;
   string name = 2;
   string description = 3;
