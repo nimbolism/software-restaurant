@@ -205,3 +205,19 @@ func GetMeals(c *fiber.Ctx) error {
 	var meals []models.Meal
 	return utils.GetModels(c, "Meals", &meals)
 }
+
+func DelFood(c *fiber.Ctx) error {
+	return utils.DeleteRecord(c, "Food", "name", &models.Food{})
+}
+
+func DelCategory(c *fiber.Ctx) error {
+	return utils.DeleteRecord(c, "Category", "name", &models.Category{})
+}
+
+func DelMeal(c *fiber.Ctx) error {
+	return utils.DeleteRecord(c, "Meal", "name", &models.Meal{})
+}
+
+func DelSideDish(c *fiber.Ctx) error {
+	return utils.DeleteRecord(c, "SideDish", "name", &models.SideDish{})
+}

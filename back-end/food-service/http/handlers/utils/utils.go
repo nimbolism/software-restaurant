@@ -136,3 +136,24 @@ func GenericHandler(c *fiber.Ctx, model interface{}, modelName string, requiredF
 		return database.GetPQDB().Create(model).Error
 	})
 }
+
+func DeleteRecord(c *fiber.Ctx, modelName string, queryField string, model interface{}) error {
+	var request struct {
+		Name string `json:"name"`
+	}
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to decode request body"})
+	}
+
+	if request.Name == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Name is required"})
+	}
+
+	db := database.GetPQDB().Where(queryField+" = ?", request.Name)
+	if err := db.Delete(model).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete " + modelName})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": modelName + " deleted successfully"})
+}

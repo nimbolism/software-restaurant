@@ -26,6 +26,11 @@ func StartServer() {
 	foodApis.Post("/new/category", fooddb.CategoryHandler)
 	foodApis.Post("/new/meal", fooddb.MealHandler)
 	foodApis.Post("/new/sidedish", fooddb.SideDishHandler)
+	
+	foodApis.Delete("/food", fooddb.DelFood)
+	foodApis.Delete("/category", fooddb.DelCategory)
+	foodApis.Delete("/meal", fooddb.DelMeal)
+	foodApis.Delete("/sidedish", fooddb.DelSideDish)
 
 	foodApis.Get("/food", fooddb.GetFoods)
 	foodApis.Get("/category", fooddb.GetCategories)
