@@ -33,7 +33,7 @@ func StartServer() {
 
 	// Start Fiber HTTP server
 	println("Starting Fiber HTTP server...")
-	if err := app.Listen(":8080"); err != nil {
+	if err := app.Listen(":8010"); err != nil {
 		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
 	}
 }

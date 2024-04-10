@@ -30,7 +30,7 @@ type Server struct {
 
 func StartServer() {
 	println("Starting gRPC server...")
-	lis, err := net.Listen("tcp", ":50053")
+	lis, err := net.Listen("tcp", ":50040")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -45,7 +45,7 @@ func InitializeUserGRPCClient() error {
 	// Set up a connection to the gRPC server if not already initialized
 	if UserServiceClient == nil {
 		// Create a connection to the gRPC server
-		conn, err := grpc.NewClient("user-service:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient("user-service:50010", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
@@ -68,7 +68,7 @@ func InitializeCardGRPCClient() error {
 	// Set up a connection to the gRPC server if not already initialized
 	if CardServiceClient == nil {
 		// Create a connection to the gRPC server
-		conn, err := grpc.NewClient("card-service:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient("card-service:50020", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
@@ -91,7 +91,7 @@ func InitializeFoodGRPCClient() error {
 	// Set up a connection to the gRPC server if not already initialized
 	if FoodServiceClient == nil {
 		// Create a connection to the gRPC server
-		conn, err := grpc.NewClient("food-service:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient("food-service:50030", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}

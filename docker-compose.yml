@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     ports:
-      - "50050:50050"
+      - "50010:50010"
     depends_on:
       - postgres
     networks:
@@ -27,7 +27,7 @@ services:
     env_file:
       - .env
     ports:
-      - "50051:50051"
+      - "50020:50020"
     depends_on:
       - postgres
       - user-service
@@ -45,7 +45,7 @@ services:
     env_file:
       - .env
     ports:
-      - "50052:50052"
+      - "50030:50030"
     depends_on:
       - postgres
       - card-service
@@ -63,7 +63,7 @@ services:
     env_file:
       - .env
     ports:
-      - "50053:50053"
+      - "50040:50040"
     depends_on:
       - postgres
       - user-service
@@ -83,7 +83,7 @@ services:
     env_file:
       - .env
     ports:
-      - "50054:50054"
+      - "50050:50050"
     depends_on:
       - redis-database
       - order-service

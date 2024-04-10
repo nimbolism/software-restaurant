@@ -105,7 +105,7 @@ func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (
 
 func StartServer() {
 	println("Starting gRPC server...")
-	lis, err := net.Listen("tcp", ":50050")
+	lis, err := net.Listen("tcp", ":50010")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

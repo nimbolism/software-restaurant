@@ -89,7 +89,7 @@ func AuthenticateUser(c *fiber.Ctx) (*user_proto.AuthenticateUserResponse, error
 
 func StartServer() {
 	println("Starting gRPC server...")
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":50020")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -104,7 +104,7 @@ func InitializeGRPCClient() error {
 	// Set up a connection to the gRPC server if not already initialized
 	if UserServiceClient == nil {
 		// Create a connection to the gRPC server
-		conn, err := grpc.NewClient("user-service:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient("user-service:50010", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}

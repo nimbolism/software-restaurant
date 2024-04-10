@@ -21,10 +21,11 @@ func StartServer() {
 	})
 
 	// orderApis := orderGroup.Group("/api")
+	// orderApis.Post()
 
 	// Start Fiber HTTP server
 	println("Starting Fiber HTTP server...")
-	if err := app.Listen(":8083"); err != nil {
+	if err := app.Listen(":8040"); err != nil {
 		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
 	}
 }
