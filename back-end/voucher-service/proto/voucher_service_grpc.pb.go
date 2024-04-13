@@ -19,18 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	VoucherService_StoreOrderDetails_FullMethodName    = "/VoucherService/StoreOrderDetails"
-	VoucherService_RetrieveOrderDetails_FullMethodName = "/VoucherService/RetrieveOrderDetails"
-	VoucherService_GetAllOrders_FullMethodName         = "/VoucherService/GetAllOrders"
+	VoucherService_StoreOrderDetails_FullMethodName = "/VoucherService/StoreOrderDetails"
+	VoucherService_GetAllOrders_FullMethodName      = "/VoucherService/GetAllOrders"
 )
 
 // VoucherServiceClient is the client API for VoucherService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VoucherServiceClient interface {
-	StoreOrderDetails(ctx context.Context, in *StoreOrderDetailsRequest, opts ...grpc.CallOption) (*StoreOrderDetailsResponse, error)
-	RetrieveOrderDetails(ctx context.Context, in *RetrieveOrderDetailsRequest, opts ...grpc.CallOption) (*RetrieveOrderDetailsResponse, error)
-	GetAllOrders(ctx context.Context, in *GetAllOrdersRequest, opts ...grpc.CallOption) (*GetAllOrdersResponse, error)
+	StoreOrderDetails(ctx context.Context, in *StoreOrderDetailsRequestHelper, opts ...grpc.CallOption) (*StoreOrderDetailsResponseHelper, error)
+	GetAllOrders(ctx context.Context, in *GetAllOrdersRequestHelper, opts ...grpc.CallOption) (*GetAllOrdersResponseHelper, error)
 }
 
 type voucherServiceClient struct {
@@ -41,8 +39,8 @@ func NewVoucherServiceClient(cc grpc.ClientConnInterface) VoucherServiceClient {
 	return &voucherServiceClient{cc}
 }
 
-func (c *voucherServiceClient) StoreOrderDetails(ctx context.Context, in *StoreOrderDetailsRequest, opts ...grpc.CallOption) (*StoreOrderDetailsResponse, error) {
-	out := new(StoreOrderDetailsResponse)
+func (c *voucherServiceClient) StoreOrderDetails(ctx context.Context, in *StoreOrderDetailsRequestHelper, opts ...grpc.CallOption) (*StoreOrderDetailsResponseHelper, error) {
+	out := new(StoreOrderDetailsResponseHelper)
 	err := c.cc.Invoke(ctx, VoucherService_StoreOrderDetails_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,17 +48,8 @@ func (c *voucherServiceClient) StoreOrderDetails(ctx context.Context, in *StoreO
 	return out, nil
 }
 
-func (c *voucherServiceClient) RetrieveOrderDetails(ctx context.Context, in *RetrieveOrderDetailsRequest, opts ...grpc.CallOption) (*RetrieveOrderDetailsResponse, error) {
-	out := new(RetrieveOrderDetailsResponse)
-	err := c.cc.Invoke(ctx, VoucherService_RetrieveOrderDetails_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *voucherServiceClient) GetAllOrders(ctx context.Context, in *GetAllOrdersRequest, opts ...grpc.CallOption) (*GetAllOrdersResponse, error) {
-	out := new(GetAllOrdersResponse)
+func (c *voucherServiceClient) GetAllOrders(ctx context.Context, in *GetAllOrdersRequestHelper, opts ...grpc.CallOption) (*GetAllOrdersResponseHelper, error) {
+	out := new(GetAllOrdersResponseHelper)
 	err := c.cc.Invoke(ctx, VoucherService_GetAllOrders_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -72,9 +61,8 @@ func (c *voucherServiceClient) GetAllOrders(ctx context.Context, in *GetAllOrder
 // All implementations must embed UnimplementedVoucherServiceServer
 // for forward compatibility
 type VoucherServiceServer interface {
-	StoreOrderDetails(context.Context, *StoreOrderDetailsRequest) (*StoreOrderDetailsResponse, error)
-	RetrieveOrderDetails(context.Context, *RetrieveOrderDetailsRequest) (*RetrieveOrderDetailsResponse, error)
-	GetAllOrders(context.Context, *GetAllOrdersRequest) (*GetAllOrdersResponse, error)
+	StoreOrderDetails(context.Context, *StoreOrderDetailsRequestHelper) (*StoreOrderDetailsResponseHelper, error)
+	GetAllOrders(context.Context, *GetAllOrdersRequestHelper) (*GetAllOrdersResponseHelper, error)
 	mustEmbedUnimplementedVoucherServiceServer()
 }
 
@@ -82,13 +70,10 @@ type VoucherServiceServer interface {
 type UnimplementedVoucherServiceServer struct {
 }
 
-func (UnimplementedVoucherServiceServer) StoreOrderDetails(context.Context, *StoreOrderDetailsRequest) (*StoreOrderDetailsResponse, error) {
+func (UnimplementedVoucherServiceServer) StoreOrderDetails(context.Context, *StoreOrderDetailsRequestHelper) (*StoreOrderDetailsResponseHelper, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreOrderDetails not implemented")
 }
-func (UnimplementedVoucherServiceServer) RetrieveOrderDetails(context.Context, *RetrieveOrderDetailsRequest) (*RetrieveOrderDetailsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RetrieveOrderDetails not implemented")
-}
-func (UnimplementedVoucherServiceServer) GetAllOrders(context.Context, *GetAllOrdersRequest) (*GetAllOrdersResponse, error) {
+func (UnimplementedVoucherServiceServer) GetAllOrders(context.Context, *GetAllOrdersRequestHelper) (*GetAllOrdersResponseHelper, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllOrders not implemented")
 }
 func (UnimplementedVoucherServiceServer) mustEmbedUnimplementedVoucherServiceServer() {}
@@ -105,7 +90,7 @@ func RegisterVoucherServiceServer(s grpc.ServiceRegistrar, srv VoucherServiceSer
 }
 
 func _VoucherService_StoreOrderDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreOrderDetailsRequest)
+	in := new(StoreOrderDetailsRequestHelper)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -117,31 +102,13 @@ func _VoucherService_StoreOrderDetails_Handler(srv interface{}, ctx context.Cont
 		FullMethod: VoucherService_StoreOrderDetails_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoucherServiceServer).StoreOrderDetails(ctx, req.(*StoreOrderDetailsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _VoucherService_RetrieveOrderDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RetrieveOrderDetailsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(VoucherServiceServer).RetrieveOrderDetails(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: VoucherService_RetrieveOrderDetails_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoucherServiceServer).RetrieveOrderDetails(ctx, req.(*RetrieveOrderDetailsRequest))
+		return srv.(VoucherServiceServer).StoreOrderDetails(ctx, req.(*StoreOrderDetailsRequestHelper))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _VoucherService_GetAllOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllOrdersRequest)
+	in := new(GetAllOrdersRequestHelper)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -153,7 +120,7 @@ func _VoucherService_GetAllOrders_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: VoucherService_GetAllOrders_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoucherServiceServer).GetAllOrders(ctx, req.(*GetAllOrdersRequest))
+		return srv.(VoucherServiceServer).GetAllOrders(ctx, req.(*GetAllOrdersRequestHelper))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -168,10 +135,6 @@ var VoucherService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreOrderDetails",
 			Handler:    _VoucherService_StoreOrderDetails_Handler,
-		},
-		{
-			MethodName: "RetrieveOrderDetails",
-			Handler:    _VoucherService_RetrieveOrderDetails_Handler,
 		},
 		{
 			MethodName: "GetAllOrders",

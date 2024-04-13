@@ -7,16 +7,16 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/utils"
 	"github.com/skip2/go-qrcode"
 )
 
 func Login(username, password string) (string, error) {
 	var user models.User
-	db := database.GetPQDB()
+	db := postgresapp.DB
 
 	// Find user by username
 	result := db.Where("username = ?", username).First(&user)

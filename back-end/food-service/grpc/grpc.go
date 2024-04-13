@@ -7,9 +7,9 @@ import (
 	"net"
 
 	card_proto "github.com/nimbolism/software-restaurant/back-end/card-service/proto"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/proto"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,7 +27,7 @@ type Server struct {
 }
 
 func (s *Server) GetFoodDetailsByName(ctx context.Context, req *proto.FoodIdRequest) (*proto.Food, error) {
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	var food models.Food
 	if err := db.Where("name = ?", req.FoodName).First(&food).Error; err != nil {
 		return nil, status.Error(
@@ -66,7 +66,7 @@ func (s *Server) GetFoodDetailsByName(ctx context.Context, req *proto.FoodIdRequ
 }
 
 func (s *Server) GetSideDishDetailsByName(ctx context.Context, req *proto.SideDishIdRequest) (*proto.SideDish, error) {
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	var sideDish models.SideDish
 	if err := db.Where("name = ?", req.SideDishName).First(&sideDish).Error; err != nil {
 		return nil, status.Error(

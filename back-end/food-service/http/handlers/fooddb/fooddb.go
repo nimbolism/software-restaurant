@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/http/handlers/utils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 )
 
 func FoodHandler(c *fiber.Ctx) error {
@@ -30,12 +30,12 @@ func FoodHandler(c *fiber.Ctx) error {
 
 	// Fetch CategoryID based on the provided name
 	var category models.Category
-	if err := database.GetPQDB().Where("name = ?", foodRequest.Category).First(&category).Error; err != nil {
+	if err := postgresapp.DB.Where("name = ?", foodRequest.Category).First(&category).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Category not found"})
 	}
 
 	var meal models.Meal
-	if err := database.GetPQDB().Where("name = ?", foodRequest.Meal).First(&meal).Error; err != nil {
+	if err := postgresapp.DB.Where("name = ?", foodRequest.Meal).First(&meal).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "meal not found"})
 	}
 
@@ -48,21 +48,21 @@ func FoodHandler(c *fiber.Ctx) error {
 	}
 
 	return utils.HandleRequest(c, &newFood, "Food", func(model interface{}) error {
-		return database.GetPQDB().Create(model).Error
+		return postgresapp.DB.Create(model).Error
 	})
 }
 
 func CategoryHandler(c *fiber.Ctx) error {
 	var category models.Category
 	return utils.HandleRequest(c, &category, "Category", func(model interface{}) error {
-		return database.GetPQDB().Create(model).Error
+		return postgresapp.DB.Create(model).Error
 	})
 }
 
 func MealHandler(c *fiber.Ctx) error {
 	var meal models.Meal
 	return utils.HandleRequest(c, &meal, "Meal", func(model interface{}) error {
-		return database.GetPQDB().Create(model).Error
+		return postgresapp.DB.Create(model).Error
 	})
 }
 
@@ -88,7 +88,7 @@ func SideDishHandler(c *fiber.Ctx) error {
 	}
 
 	return utils.HandleRequest(c, &newSideDish, "SideDish", func(model interface{}) error {
-		return database.GetPQDB().Create(model).Error
+		return postgresapp.DB.Create(model).Error
 	})
 }
 
@@ -98,7 +98,7 @@ func GetFoods(c *fiber.Ctx) error {
 		perPage = 20
 	}
 
-	db := database.GetPQDB().Model(&models.Food{})
+	db := postgresapp.DB.Model(&models.Food{})
 
 	// Define category and meal names to filter by
 	categoryName := c.Query("category", "")
@@ -163,7 +163,7 @@ func GetSideDishes(c *fiber.Ctx) error {
 		perPage = 20
 	}
 
-	db := database.GetPQDB().Model(&models.SideDish{})
+	db := postgresapp.DB.Model(&models.SideDish{})
 
 	// Create a slice to hold the data
 	var sideDishes []models.SideDish

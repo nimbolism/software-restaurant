@@ -10,10 +10,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	card_proto "github.com/nimbolism/software-restaurant/back-end/card-service/proto"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/food-service/grpc"
 	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"gorm.io/gorm"
 )
 
@@ -45,7 +45,7 @@ func HandleRequest(c *fiber.Ctx, model interface{}, modelName string, createFunc
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed to decode request body: %v", err)})
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 
 	// Check if the model already exists
 	existingModel := reflect.New(reflect.TypeOf(model).Elem()).Interface()
@@ -74,7 +74,7 @@ func (m MealWithCreatedAt) GetCreatedAt() time.Time {
 }
 
 func GetModels(c *fiber.Ctx, modelName string, modelSlice interface{}) error {
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	if err := db.Find(modelSlice).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": fmt.Sprintf("%s not found", modelName)})
 	}
@@ -133,7 +133,7 @@ func GenericHandler(c *fiber.Ctx, model interface{}, modelName string, requiredF
 	}
 
 	return HandleRequest(c, model, modelName, func(model interface{}) error {
-		return database.GetPQDB().Create(model).Error
+		return postgresapp.DB.Create(model).Error
 	})
 }
 
@@ -150,7 +150,7 @@ func DeleteRecord(c *fiber.Ctx, modelName string, queryField string, model inter
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Name is required"})
 	}
 
-	db := database.GetPQDB().Where(queryField+" = ?", request.Name)
+	db := postgresapp.DB.Where(queryField+" = ?", request.Name)
 	if err := db.Delete(model).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete " + modelName})
 	}

@@ -10,8 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/grpc"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/utils"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 )
 
@@ -33,7 +33,7 @@ func ProfileHandler(c *fiber.Ctx) error {
 		Verified:    false,
 		AccessLevel: 1,
 	}
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	if err := db.Create(&newCard).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Failed to create card: %v", err))
 	}
@@ -132,7 +132,7 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 
 	if userAccessLevel >= reqCard.AccessLevel { //change this and remove equal
 		reqCard.AccessLevel++
-		db := database.GetPQDB()
+		db := postgresapp.DB
 		err = db.Save(reqCard).Error
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to update card information"})

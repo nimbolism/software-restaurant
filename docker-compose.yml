@@ -49,6 +49,7 @@ services:
     depends_on:
       - postgres
       - card-service
+      - user-service
     networks:
       - backend
       - postgres-access
@@ -69,6 +70,7 @@ services:
       - user-service
       - card-service
       - food-service
+      - rabbitmq
     networks:
       - backend
       - postgres-access
@@ -106,6 +108,9 @@ services:
       - food-service
       - order-service
       - voucher-service
+      - rabbitmq
+      - postgres
+      - redis-database
     networks:
       - backend
     restart: unless-stopped
@@ -140,6 +145,18 @@ services:
     hostname: redis-database
     networks:
       - redis-access
+
+  rabbitmq:
+    container_name: rabbitmq-service-container
+    image: 'rabbitmq:3-management'
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - '${RABBITMQ_PORT}:${RABBITMQ_PORT}'
+      - '${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}'
+    networks:
+      - backend
 
 
 networks:

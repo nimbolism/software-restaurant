@@ -6,7 +6,6 @@ import (
 
 	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/voucher-service/grpc"
-	"github.com/nimbolism/software-restaurant/back-end/voucher-service/http"
 )
 
 func main() {
@@ -29,9 +28,6 @@ func main() {
 
 	// Start gRPC server
 	go grpc.StartServer()
-
-	// Start HTTP server
-	go http.StartServer()
 
 	// Keep the main function running
 	select {}

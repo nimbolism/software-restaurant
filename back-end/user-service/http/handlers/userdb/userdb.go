@@ -5,9 +5,9 @@ import (
 	"reflect"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/auth"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/utils"
 	"golang.org/x/text/cases"
@@ -26,7 +26,7 @@ func CreateUser(username, password, confirmPassword string) error {
 		return fmt.Errorf("failed to hash password: %v", err)
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	// Check if the username already exists
 	var existingUser models.User
 	if err := db.Where("username = ?", username).First(&existingUser).Error; err == nil {
@@ -90,7 +90,7 @@ func CompleteUserHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to decode request body"})
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
@@ -135,7 +135,7 @@ func ChangePasswordUserHandler(c *fiber.Ctx) error {
 	}
 
 	// Retrieve the user from the database
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	var existingUser models.User
 	if err := db.Where("username = ?", username).First(&existingUser).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
@@ -182,7 +182,7 @@ func RecreateQRCodeLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not create qrcode!"})
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
@@ -208,7 +208,7 @@ func GetUserInfo(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})

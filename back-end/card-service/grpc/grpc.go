@@ -12,8 +12,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/http/handlers/utils"
 	"github.com/nimbolism/software-restaurant/back-end/card-service/proto"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -41,7 +41,7 @@ func (s *Server) GetCardInfo(ctx context.Context, req *proto.GetCardInfoRequest)
 
 	return &proto.CardInfoResponse{
 		BlackListed: card.BlackListed,
-		Verified: card.Verified,
+		Verified:    card.Verified,
 		AccessLevel: int32(card.AccessLevel),
 	}, nil
 }
@@ -57,7 +57,7 @@ func (s *Server) UpdateReserves(ctx context.Context, req *proto.UpdateReservesRe
 		return nil, err
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	card.Reserves += int(req.ReservesChange)
 	if err := db.Save(&card).Error; err != nil {
 		return nil, err

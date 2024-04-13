@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "github.com/nimbolism/software-restaurant/order-service/proto";
+option go_package = "github.com/nimbolism/software-restaurant/back-end/order-service/proto";
 
 // Import the necessary packages
 import "google/protobuf/timestamp.proto";
@@ -33,10 +33,7 @@ message OrderSideDish {
 service OrderService {
   rpc GetAllOrders (GetAllOrdersRequest) returns (GetAllOrdersResponse);
   rpc GetAllOrdersByUsername (GetAllOrdersByUsernameRequest) returns (GetAllOrdersResponse);
-  rpc GetAllOrdersByFoodName (GetAllOrdersByFoodNameRequest) returns (GetAllOrdersResponse);
-  rpc GetAllOrdersBySideDishName (GetAllOrdersBySideDishNameRequest) returns (GetAllOrdersResponse);
   rpc GetAllOrdersBetweenTimestamps (GetAllOrdersBetweenTimestampsRequest) returns (GetAllOrdersResponse);
-  rpc GetAllOrdersByCategoryOrMealName (GetAllOrdersByCategoryOrMealNameRequest) returns (GetAllOrdersResponse); // Add this RPC
 }
 
 // Define request and response messages for each RPC
@@ -46,21 +43,9 @@ message GetAllOrdersByUsernameRequest {
   string username = 1;
 }
 
-message GetAllOrdersByFoodNameRequest {
-  string food_name = 1;
-}
-
-message GetAllOrdersBySideDishNameRequest {
-  string side_dish_name = 1;
-}
-
 message GetAllOrdersBetweenTimestampsRequest {
   google.protobuf.Timestamp start_time = 1;
   google.protobuf.Timestamp end_time = 2;
-}
-
-message GetAllOrdersByCategoryOrMealNameRequest {
-  string category_or_meal_name = 1;
 }
 
 message GetAllOrdersResponse {

@@ -45,10 +45,11 @@ message GetAllUsersResponse {
 
 // Definition of a user data.
 message UserData {
-    string username = 1;
-    string email = 2;
-    string phone_number = 3;
-    string national_code = 4;
+    uint64 userId = 1;
+    string username = 2;
+    string email = 3;
+    string phone_number = 4;
+    string national_code = 5;
 }
 
 message GetOneUserRequest {

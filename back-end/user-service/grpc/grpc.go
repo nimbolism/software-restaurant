@@ -5,14 +5,14 @@ import (
 	"log"
 	"net"
 
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/auth"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/http/handlers/utils"
 	"github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -28,7 +28,7 @@ func (s *Server) AuthenticateUser(ctx context.Context, req *proto.AuthenticateUs
 		)
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return nil, status.Error(
@@ -50,7 +50,7 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 		)
 	}
 
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return nil, status.Error(
@@ -60,6 +60,7 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 
 	return &proto.GetUserInfoResponse{
 		UserData: &proto.UserData{
+			UserId:       uint64(existingUser.ID),
 			Username:     existingUser.Username,
 			Email:        existingUser.Email,
 			PhoneNumber:  existingUser.PhoneNumber,
@@ -70,7 +71,7 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 
 func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest) (*proto.GetAllUsersResponse, error) {
 	var users []models.User
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	if err := db.Find(&users).Error; err != nil {
 		return nil, status.Error(
 			codes.Internal, "Cannot get users from database",
@@ -91,7 +92,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest)
 }
 
 func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (*proto.GetOneUserResponse, error) {
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	reqUser, err := utils.GetExistingUser(db, req.Username)
 	if err != nil {
 		return nil, status.Error(

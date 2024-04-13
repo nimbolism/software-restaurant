@@ -9,6 +9,7 @@ import (
 	food_proto "github.com/nimbolism/software-restaurant/back-end/food-service/proto"
 	"github.com/nimbolism/software-restaurant/back-end/order-service/proto"
 	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
+	voucher_proto "github.com/nimbolism/software-restaurant/back-end/voucher-service/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -22,6 +23,9 @@ var (
 
 	FoodServiceClient food_proto.FoodServiceClient
 	foodClientConn    *grpc.ClientConn
+
+	VoucherServiceClient voucher_proto.VoucherServiceClient
+	voucherClientConn    *grpc.ClientConn
 )
 
 type Server struct {
@@ -107,5 +111,28 @@ func InitializeFoodGRPCClient() error {
 func CloseFoodGRPCClient() {
 	if foodClientConn != nil {
 		foodClientConn.Close()
+	}
+}
+
+func InitializeVoucherGRPCClient() error {
+	// Set up a connection to the gRPC server if not already initialized
+	if VoucherServiceClient == nil {
+		// Create a connection to the gRPC server
+		conn, err := grpc.NewClient("voucher-service:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return fmt.Errorf("failed to connect to gRPC server: %v", err)
+		}
+
+		// Create a client for the UserService
+		VoucherServiceClient = voucher_proto.NewVoucherServiceClient(conn)
+		voucherClientConn = conn
+	}
+
+	return nil
+}
+
+func CloseVoucherGRPCClient() {
+	if voucherClientConn != nil {
+		voucherClientConn.Close()
 	}
 }

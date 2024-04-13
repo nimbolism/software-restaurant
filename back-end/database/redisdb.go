@@ -16,6 +16,8 @@ type RedisConfig struct {
 	Password string
 }
 
+var redisClient *redis.Client
+
 // NewRedisConfig creates a new RedisConfig instance from environment variables.
 func NewRedisConfig() (*RedisConfig, error) {
 	host := os.Getenv("REDIS_HOST")
@@ -40,15 +42,19 @@ func InitRedisDB(ctx context.Context, cfg *RedisConfig) (*redis.Client, error) {
 		Password: cfg.Password,
 	}
 
-	client := redis.NewClient(options)
+	redisClient = redis.NewClient(options)
 
 	// Test the Redis database connection
-	if err := client.Ping(ctx).Err(); err != nil {
+	if err := redisClient.Ping(ctx).Err(); err != nil {
 		return nil, fmt.Errorf("failed to connect to the Redis database: %v", err)
 	}
 
 	log.Println("Connected to the Redis database successfully!")
-	return client, nil
+	return redisClient, nil
+}
+
+func GetRedisClient() *redis.Client {
+	return redisClient
 }
 
 // CloseRedisDB closes the Redis database connection.

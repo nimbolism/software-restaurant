@@ -11,14 +11,14 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v2"
-	"github.com/nimbolism/software-restaurant/back-end/database"
 	"github.com/nimbolism/software-restaurant/back-end/database/models"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	user_proto "github.com/nimbolism/software-restaurant/back-end/user-service/proto"
 )
 
 func FindCardByUserID(userID uint) (*models.Card, error) {
 	var card models.Card
-	db := database.GetPQDB()
+	db := postgresapp.DB
 	if err := db.Where("user_id = ?", userID).First(&card).Error; err != nil {
 		return nil, err
 	}

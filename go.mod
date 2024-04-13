@@ -8,7 +8,9 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/protobuf v1.5.4
+	github.com/sirupsen/logrus v1.9.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+	github.com/streadway/amqp v1.1.0
 	golang.org/x/crypto v0.22.0
 	golang.org/x/text v0.14.0
 	google.golang.org/grpc v1.63.0
