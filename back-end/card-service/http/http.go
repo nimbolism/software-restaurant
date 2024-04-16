@@ -25,6 +25,7 @@ func StartServer() {
 	cardApis.Post("/photo", carddb.ProfileHandler)
 	cardApis.Post("/photo/new", carddb.UpdateImageHandler)
 	cardApis.Post("/access", carddb.GiveAccessLevel)
+	cardApis.Post("/verify", carddb.VerifyUser)
 	cardApis.Get("/photo", carddb.GetImageHandler)
 	cardApis.Get("/card", carddb.GetCardHandler)
 

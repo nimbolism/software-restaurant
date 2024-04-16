@@ -141,3 +141,49 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": "successfully updated card access level"})
 }
+
+func VerifyUser(c *fiber.Ctx) error {
+	authenticateUserResponse, err := grpc.AuthenticateUser(c)
+	if err != nil {
+		return err
+	}
+
+	// Retrieve card information for the authenticated user
+	card, err := utils.FindCardByUserID(uint(authenticateUserResponse.UserId))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve card information"})
+	}
+
+	userAccessLevel := card.AccessLevel
+	if err := grpc.InitializeGRPCClient(); err != nil {
+		log.Fatalf("Failed to initialize gRPC client: %v", err)
+	}
+
+	var reqBody struct {
+		Username string `json:"username"`
+	}
+	if err := c.BodyParser(&reqBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to decode request body"})
+	}
+
+	req, err := grpc.UserServiceClient.GetOneUser(context.Background(), &user_proto.GetOneUserRequest{Username: reqBody.Username})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
+	}
+
+	reqCard, err := utils.FindCardByUserID(uint(req.UserId))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
+	}
+
+	if userAccessLevel >= 2 { 
+		reqCard.Verified = true
+		db := postgresapp.DB
+		err = db.Save(reqCard).Error
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to update card information"})
+		}
+	}
+
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": "successfully updated card verification status"})
+}

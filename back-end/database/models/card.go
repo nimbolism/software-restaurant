@@ -13,6 +13,6 @@ type Card struct {
 }
 
 func (c *Card) BeforeSave(tx *gorm.DB) (err error) {
-	c.BlackListed = c.Reserves > 3
+	c.BlackListed = c.Reserves >= 3
 	return
 }

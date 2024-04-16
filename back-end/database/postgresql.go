@@ -109,6 +109,7 @@ func RunMigrations() error {
 		&models.Food{},
 		&models.SideDish{},
 		&models.Order{},
+		&models.OrderFail{},
 	}
 
 	for _, model := range models {

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
@@ -13,7 +14,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 )
 
 type Server struct {
@@ -27,17 +27,18 @@ func (s *Server) StoreOrderDetails(ctx context.Context, req *voucher_proto.Store
 	order := req.GetOrder()
 	fmt.Println(order)
 	// Marshal order to bytes
-	orderBytes, err := proto.Marshal(order)
+	orderJson, err := json.Marshal(order)
 	if err != nil {
 		return nil, status.Error(
-			codes.NotFound, fmt.Sprintf("failed to marshal order: %v", err),
+			codes.NotFound, fmt.Sprintf("failed to convert order to json: %v", err),
 		)
 	}
 
-	fmt.Println(orderBytes)
+	orderString := string(orderJson)
+	fmt.Println(orderString)
 	// Set order in Redis with 24-hour expiration
 	redisClient := database.GetRedisClient()
-	err = redisClient.Set(ctx, fmt.Sprintf("order:%d", order.Id), orderBytes, 24*time.Hour).Err()
+	err = redisClient.Set(ctx, fmt.Sprintf("order:%d", order.Id), orderString, 24*time.Hour).Err()
 	if err != nil {
 		return nil, status.Error(
 			codes.NotFound, fmt.Sprintf("failed to store order in Redis: %v", err),
@@ -78,7 +79,7 @@ func (s *Server) GetAllOrders(ctx context.Context, req *voucher_proto.GetAllOrde
 			}
 
 			order := &voucher_proto.OrderHelper{}
-			err = proto.Unmarshal(orderBytes, order)
+			err = json.Unmarshal(orderBytes, order)
 			if err != nil {
 				errors <- fmt.Errorf("failed to unmarshal order from Redis: %v", err)
 				return

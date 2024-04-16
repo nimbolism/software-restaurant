@@ -18,7 +18,7 @@ import (
 )
 
 func SaveOrder(order *models.Order, db *gorm.DB) error {
-	if grpc.VoucherServiceClient == nil{
+	if grpc.VoucherServiceClient == nil {
 		if err := grpc.InitializeVoucherGRPCClient(); err != nil {
 			return fmt.Errorf("failed to initialize voucher gRPC client: %w", err)
 		}
@@ -164,4 +164,16 @@ func GetUsernameFromJWT(cookie string) (string, error) {
 	}
 
 	return username, nil
+}
+
+func AuthenticateUser(cookie string) (*user_proto.AuthenticateUserResponse, error) {
+	if cookie == "" {
+		return nil, fmt.Errorf("JWT cookie not found")
+	}
+
+	if err := grpc.InitializeUserGRPCClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize gRPC client: %v", err)
+	}
+
+	return grpc.UserServiceClient.AuthenticateUser(context.Background(), &user_proto.AuthenticateUserRequest{JwtToken: cookie})
 }

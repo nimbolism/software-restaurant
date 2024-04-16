@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/nimbolism/software-restaurant/back-end/database/models"
 	"github.com/nimbolism/software-restaurant/back-end/gutils"
+	"github.com/nimbolism/software-restaurant/back-end/gutils/postgresapp"
 	"github.com/nimbolism/software-restaurant/back-end/order-service/http/handlers/orderdb"
 	"github.com/nimbolism/software-restaurant/back-end/rabbitmq"
 )
@@ -80,6 +82,8 @@ func StartServer() {
 		}
 		return c.SendString("Order submitted successfully!")
 	})
+	orderApis.Get("/order/failed", orderdb.GetFailedOrders)
+	orderApis.Get("/order/success", orderdb.GetOrders)
 
 	// Function to consume messages from RabbitMQ
 	consumeMessages := func() {
@@ -94,8 +98,14 @@ func StartServer() {
 			for msg := range msgs {
 				// Call the orderdb.OrderHandler function with the message body
 				fmt.Println("before function")
-				err := orderdb.OrderHandler(msg.Body)
+				username, err := orderdb.OrderHandler(msg.Body)
 				if err != nil {
+					db := postgresapp.DB
+					orderfail := models.OrderFail{
+						Username: username,
+						Error:    err.Error(),
+					}
+					db.Save(&orderfail)
 					fmt.Printf("Error handling order: %v", err)
 					// Handle error accordingly
 				}
