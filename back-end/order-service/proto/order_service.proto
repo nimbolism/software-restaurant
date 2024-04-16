@@ -19,8 +19,6 @@ message OrderFood {
   int64 id = 1;
   string name = 2;
   string description = 3;
-  string category_name = 4; // Add this field
-  string meal_name = 5;     // Add this field
 }
 
 message OrderSideDish {
