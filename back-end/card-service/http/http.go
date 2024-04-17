@@ -10,17 +10,16 @@ import (
 func StartServer() {
 	app := fiber.New()
 
-	// Create a group for routes starting with "/user"
+	// /card group for card-service
 	cardGroup := app.Group("/card")
 
-	// Handler for the root endpoint
+	// root handler for testing
 	cardGroup.Get("/", func(c *fiber.Ctx) error {
-		// Set the content type header
 		c.Set("Content-Type", "text/plain")
-		// Return the response string
 		return c.SendString("Welcome to the Card Service!")
 	})
 
+	// /api group for APIs
 	cardApis := cardGroup.Group("/api")
 	cardApis.Post("/photo", carddb.ProfileHandler)
 	cardApis.Post("/photo/new", carddb.UpdateImageHandler)
@@ -29,9 +28,9 @@ func StartServer() {
 	cardApis.Get("/photo", carddb.GetImageHandler)
 	cardApis.Get("/card", carddb.GetCardHandler)
 
-	// Start Fiber HTTP server
-	println("Starting Fiber HTTP server...")
+	// Start card HTTP server
+	println("Starting card HTTP server...")
 	if err := app.Listen(":8020"); err != nil {
-		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
+		log.Fatalf("Failed to start card HTTP server: %v", err)
 	}
 }

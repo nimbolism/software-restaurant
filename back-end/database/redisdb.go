@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// RedisConfig holds the configuration for the Redis connection.
+// the configuration for the Redis connection
 type RedisConfig struct {
 	Host     string
 	Port     string
@@ -18,7 +18,6 @@ type RedisConfig struct {
 
 var redisClient *redis.Client
 
-// NewRedisConfig creates a new RedisConfig instance from environment variables.
 func NewRedisConfig() (*RedisConfig, error) {
 	host := os.Getenv("REDIS_HOST")
 	port := os.Getenv("REDIS_PORT")
@@ -35,7 +34,6 @@ func NewRedisConfig() (*RedisConfig, error) {
 	}, nil
 }
 
-// InitRedisDB initializes the connection to the Redis database.
 func InitRedisDB(ctx context.Context, cfg *RedisConfig) (*redis.Client, error) {
 	options := &redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
@@ -44,7 +42,6 @@ func InitRedisDB(ctx context.Context, cfg *RedisConfig) (*redis.Client, error) {
 
 	redisClient = redis.NewClient(options)
 
-	// Test the Redis database connection
 	if err := redisClient.Ping(ctx).Err(); err != nil {
 		return nil, fmt.Errorf("failed to connect to the Redis database: %v", err)
 	}
@@ -57,7 +54,6 @@ func GetRedisClient() *redis.Client {
 	return redisClient
 }
 
-// CloseRedisDB closes the Redis database connection.
 func CloseRedisDB(client *redis.Client) error {
 	if client != nil {
 		if err := client.Close(); err != nil {

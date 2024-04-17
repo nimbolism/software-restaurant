@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -35,14 +34,12 @@ func init() {
 func StartServer() {
 	app := fiber.New()
 
-	// Create a group for routes starting with "/user"
+	// /order for order service
 	orderGroup := app.Group("/order")
 
-	// Handler for the root endpoint
+	// root endpoint for testing
 	orderGroup.Get("/", func(c *fiber.Ctx) error {
-		// Set the content type header
 		c.Set("Content-Type", "text/plain")
-		// Return the response string
 		return c.SendString("Welcome to the order Service!")
 	})
 
@@ -85,7 +82,6 @@ func StartServer() {
 	orderApis.Get("/order/failed", orderdb.GetFailedOrders)
 	orderApis.Get("/order/success", orderdb.GetOrders)
 
-	// Function to consume messages from RabbitMQ
 	consumeMessages := func() {
 		for {
 			// Consume messages from the "order_queue" queue
@@ -96,8 +92,6 @@ func StartServer() {
 				continue
 			}
 			for msg := range msgs {
-				// Call the orderdb.OrderHandler function with the message body
-				fmt.Println("before function")
 				username, err := orderdb.OrderHandler(msg.Body)
 				if err != nil {
 					db := postgresapp.DB
@@ -106,26 +100,19 @@ func StartServer() {
 						Error:    err.Error(),
 					}
 					db.Save(&orderfail)
-					fmt.Printf("Error handling order: %v", err)
-					// Handle error accordingly
 				}
-				fmt.Println("after function")
-				// Acknowledge message processing
 			}
 		}
 	}
 
-	// Start a Goroutine to consume messages from RabbitMQ
 	go consumeMessages()
 
-	// Start Fiber HTTP server
-	println("Starting Fiber HTTP server...")
+	println("Starting order HTTP server...")
 	if err := app.Listen(":8040"); err != nil {
-		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
+		log.Fatalf("Failed to start order HTTP server: %v", err)
 	}
 }
 
-// CloseRabbitMQ closes the RabbitMQ connection
 func CloseRabbitMQ() {
 	rmq.Close()
 }

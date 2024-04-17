@@ -30,7 +30,6 @@ func SaveOrder(order *models.Order, db *gorm.DB) error {
 	}
 
 	fmt.Println("after function")
-	// Handle response
 	if !storeResponse.GetSuccess() {
 		return errors.New("failed to store order details: response indicates failure")
 	}

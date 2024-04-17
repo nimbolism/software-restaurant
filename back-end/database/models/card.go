@@ -2,7 +2,6 @@ package models
 
 import "gorm.io/gorm"
 
-// Card represents card data in the database
 type Card struct {
 	gorm.Model  `gorm:"primaryKey=card_id"`
 	UserID      uint `gorm:"foreignKey:UserID"`
@@ -12,6 +11,7 @@ type Card struct {
 	AccessLevel int  // 1 => ordinary, 2 => helper, 3 => admin
 }
 
+// trigger for automatically black listing users
 func (c *Card) BeforeSave(tx *gorm.DB) (err error) {
 	c.BlackListed = c.Reserves >= 3
 	return

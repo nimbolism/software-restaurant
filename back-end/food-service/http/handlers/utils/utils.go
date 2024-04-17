@@ -62,7 +62,7 @@ func HandleRequest(c *fiber.Ctx, model interface{}, modelName string, createFunc
 }
 
 func GetCardInfo(ctx context.Context, jwtToken string) (*card_proto.CardInfoResponse, error) {
-	if err := grpc.InitializeGRPCClient(); err != nil {
+	if err := grpc.InitializeCardGRPCdClient(); err != nil {
 		log.Fatalf("Failed to initialize gRPC client: %v", err)
 	}
 

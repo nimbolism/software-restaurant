@@ -18,14 +18,13 @@ import (
 func ProfileHandler(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
 	if err := utils.HandleImageUpload(c, authenticateUserResponse); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("failed to upload image: %v", err)})
 	}
 
-	// Create a new card record
 	newCard := models.Card{
 		UserID:      uint(authenticateUserResponse.UserId),
 		Reserves:    0,
@@ -35,56 +34,53 @@ func ProfileHandler(c *fiber.Ctx) error {
 	}
 	db := postgresapp.DB
 	if err := db.Create(&newCard).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Failed to create card: %v", err))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("Failed to create card: %v", err)})
 	}
 
-	return c.SendString("Image uploaded successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "Image uploaded successfully"})
 }
 
 func UpdateImageHandler(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
 	if err := utils.HandleImageUpload(c, authenticateUserResponse); err != nil {
-		return err
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("Failed to uploade image: %v", err)})
 	}
 
-	return c.SendString("Image updated successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "Image updated successfully"})
 }
 
+
+// a function to send the image to user
 func GetImageHandler(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
-	// Specify the directory where images are stored
 	storageDir := "./uploads"
 
-	// Create the full path of the image
 	imagePath := filepath.Join(storageDir, fmt.Sprintf("%d.jpg", authenticateUserResponse.UserId))
 
-	// Check if the image exists
 	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
-		return c.Status(fiber.StatusNotFound).SendString("Image not found")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Image not found"})
 	}
 
-	// Send the image to the user
 	return c.SendFile(imagePath)
 }
 
 func GetCardHandler(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
-	// Retrieve card information for the authenticated user
 	card, err := utils.FindCardByUserID(uint(authenticateUserResponse.UserId))
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve card information"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve card information"})
 	}
 	response := map[string]interface{}{
 		"reserves":     card.Reserves,
@@ -93,13 +89,13 @@ func GetCardHandler(c *fiber.Ctx) error {
 		"access_level": card.AccessLevel,
 	}
 
-	return c.JSON(response)
+	return c.Status(fiber.StatusOK).JSON(response)
 }
 
 func GiveAccessLevel(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
 	// Retrieve card information for the authenticated user
@@ -109,7 +105,7 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 	}
 
 	userAccessLevel := card.AccessLevel
-	if err := grpc.InitializeGRPCClient(); err != nil {
+	if err := grpc.InitializeUserGRPCClient(); err != nil {
 		log.Fatalf("Failed to initialize gRPC client: %v", err)
 	}
 
@@ -122,12 +118,12 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 
 	req, err := grpc.UserServiceClient.GetOneUser(context.Background(), &user_proto.GetOneUserRequest{Username: reqBody.Username})
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
 	}
 
 	reqCard, err := utils.FindCardByUserID(uint(req.UserId))
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
 	}
 
 	if userAccessLevel >= reqCard.AccessLevel { //change this and remove equal
@@ -139,13 +135,13 @@ func GiveAccessLevel(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": "successfully updated card access level"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "successfully updated card access level"})
 }
 
 func VerifyUser(c *fiber.Ctx) error {
 	authenticateUserResponse, err := grpc.AuthenticateUser(c)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": fmt.Sprintf("failed to autherize the user: %v", err)})
 	}
 
 	// Retrieve card information for the authenticated user
@@ -155,7 +151,7 @@ func VerifyUser(c *fiber.Ctx) error {
 	}
 
 	userAccessLevel := card.AccessLevel
-	if err := grpc.InitializeGRPCClient(); err != nil {
+	if err := grpc.InitializeUserGRPCClient(); err != nil {
 		log.Fatalf("Failed to initialize gRPC client: %v", err)
 	}
 
@@ -168,12 +164,12 @@ func VerifyUser(c *fiber.Ctx) error {
 
 	req, err := grpc.UserServiceClient.GetOneUser(context.Background(), &user_proto.GetOneUserRequest{Username: reqBody.Username})
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("Failed in requesting from user service: %v", err)})
 	}
 
 	reqCard, err := utils.FindCardByUserID(uint(req.UserId))
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve requested card information"})
 	}
 
 	if userAccessLevel >= 2 { 
@@ -185,5 +181,5 @@ func VerifyUser(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": "successfully updated card verification status"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "successfully updated card verification status"})
 }

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// DBConfig holds the configuration for the database connection.
+// the configuration for the database connection
 type DBConfig struct {
 	Host     string
 	Port     string
@@ -23,7 +23,6 @@ type DBConfig struct {
 
 var db *gorm.DB
 
-// NewDBConfig creates a new DBConfig instance from environment variables.
 func NewPQDBConfig() (*DBConfig, error) {
 	host := os.Getenv("POSTGRES_HOST")
 	port := os.Getenv("POSTGRES_PORT")
@@ -44,7 +43,6 @@ func NewPQDBConfig() (*DBConfig, error) {
 	}, nil
 }
 
-// OpenPostgreSQLConnection opens a connection to the PostgreSQL database.
 func OpenPQConnection(cfg *DBConfig) error {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Tehran",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName)
@@ -84,7 +82,6 @@ func OpenPQConnection(cfg *DBConfig) error {
 	return fmt.Errorf("failed to connect to the PostgreSQL database after 10 retries")
 }
 
-// ClosePostgreSQLConnection closes the PostgreSQL database connection.
 func ClosePQConnection() error {
 	if db != nil {
 		sqlDB, err := db.DB()
@@ -99,7 +96,6 @@ func ClosePQConnection() error {
 	return nil
 }
 
-// RunMigrations runs migrations for the database.
 func RunMigrations() error {
 	models := []interface{}{
 		&models.User{},
@@ -121,7 +117,6 @@ func RunMigrations() error {
 	return nil
 }
 
-// // GetPQDB returns the instance of *gorm.DB
 func GetPQDB() *gorm.DB {
 	return db
 }

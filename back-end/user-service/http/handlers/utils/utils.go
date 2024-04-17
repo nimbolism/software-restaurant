@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// HashPassword hashes the given password
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

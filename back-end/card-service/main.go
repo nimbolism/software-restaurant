@@ -15,15 +15,12 @@ func main() {
 	postgresapp := postgresapp.New()
 	defer postgresapp.Close()
 
-	// Initialize the gRPC client connection
-	if err := grpc.InitializeGRPCClient(); err != nil {
+	if err := grpc.InitializeUserGRPCClient(); err != nil {
 		log.Fatalf("Failed to initialize gRPC client: %v", err)
 	}
 
-	// Start gRPC server
 	go grpc.StartServer()
 
-	// Start HTTP server
 	go http.StartServer()
 
 	go func() {
@@ -31,7 +28,7 @@ func main() {
 		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 		<-sigint
 
-		// Close the gRPC client connection when the server is shutting down
+		// Close the user gRPC client connection when the server is shutting down
 		grpc.CloseGRPCClient()
 
 		os.Exit(0)

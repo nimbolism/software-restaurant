@@ -10,10 +10,8 @@ func main() {
 	postgresapp := postgresapp.New()
 	defer postgresapp.Close()
 
-	// Start gRPC server
 	go grpc.StartServer()
 
-	// Start HTTP server
 	go http.StartServer()
 
 	// Keep the main function running

@@ -126,7 +126,7 @@ func convertToProtoOrders(orders []models.Order) []*proto.Order {
 }
 
 func StartServer() {
-	println("Starting gRPC server...")
+	println("Starting order gRPC server...")
 	lis, err := net.Listen("tcp", ":50040")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -139,15 +139,12 @@ func StartServer() {
 }
 
 func InitializeUserGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
 	if UserServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("user-service:50010", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		UserServiceClient = user_proto.NewUserServiceClient(conn)
 		userClientConn = conn
 	}
@@ -162,15 +159,12 @@ func CloseUserGRPCClient() {
 }
 
 func InitializeCardGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
 	if CardServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("card-service:50020", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		CardServiceClient = card_proto.NewCardServiceClient(conn)
 		cardClientConn = conn
 	}
@@ -185,15 +179,12 @@ func CloseCardGRPCClient() {
 }
 
 func InitializeFoodGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
 	if FoodServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("food-service:50030", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		FoodServiceClient = food_proto.NewFoodServiceClient(conn)
 		foodClientConn = conn
 	}
@@ -208,15 +199,12 @@ func CloseFoodGRPCClient() {
 }
 
 func InitializeVoucherGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
 	if VoucherServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("voucher-service:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		VoucherServiceClient = voucher_proto.NewVoucherServiceClient(conn)
 		voucherClientConn = conn
 	}

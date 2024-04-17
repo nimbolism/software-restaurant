@@ -32,7 +32,7 @@ func (s *Server) AuthenticateUser(ctx context.Context, req *proto.AuthenticateUs
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return nil, status.Error(
-			codes.NotFound, "Such user does not exist",
+			codes.NotFound, "User not found",
 		)
 	}
 
@@ -54,7 +54,7 @@ func (s *Server) GetUserInfo(ctx context.Context, req *proto.GetUserInfoRequest)
 	existingUser, err := utils.GetExistingUser(db, username)
 	if err != nil {
 		return nil, status.Error(
-			codes.NotFound, "Such user does not exist",
+			codes.NotFound, "User not found",
 		)
 	}
 
@@ -74,7 +74,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest)
 	db := postgresapp.DB
 	if err := db.Find(&users).Error; err != nil {
 		return nil, status.Error(
-			codes.Internal, "Cannot get users from database",
+			codes.Internal, "Failed to get users from database",
 		)
 	}
 
@@ -96,7 +96,7 @@ func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (
 	reqUser, err := utils.GetExistingUser(db, req.Username)
 	if err != nil {
 		return nil, status.Error(
-			codes.NotFound, "Such user does not exist",
+			codes.NotFound, "User not found",
 		)
 	}
 	return &proto.GetOneUserResponse{
@@ -105,14 +105,14 @@ func (s *Server) GetOneUser(ctx context.Context, req *proto.GetOneUserRequest) (
 }
 
 func StartServer() {
-	println("Starting gRPC server...")
+	log.Println("Starting user gRPC server...")
 	lis, err := net.Listen("tcp", ":50010")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("Failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
 	proto.RegisterUserServiceServer(s, &Server{})
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		log.Fatalf("Failed to serve: %v", err)
 	}
 }

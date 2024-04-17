@@ -15,7 +15,7 @@ func FoodHandler(c *fiber.Ctx) error {
 	var foodRequest struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
-		Category    string `json:"category"` // Change the type to string
+		Category    string `json:"category"`
 		Meal        string `json:"meal"`
 	}
 

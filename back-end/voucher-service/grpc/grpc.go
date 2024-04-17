@@ -22,7 +22,6 @@ type Server struct {
 
 var log = logrus.New() // Initialize the logger
 
-// StoreOrderDetails implements VoucherServiceServer.StoreOrderDetails
 func (s *Server) StoreOrderDetails(ctx context.Context, req *voucher_proto.StoreOrderDetailsRequestHelper) (*voucher_proto.StoreOrderDetailsResponseHelper, error) {
 	order := req.GetOrder()
 	fmt.Println(order)
@@ -49,7 +48,6 @@ func (s *Server) StoreOrderDetails(ctx context.Context, req *voucher_proto.Store
 }
 
 func (s *Server) GetAllOrders(ctx context.Context, req *voucher_proto.GetAllOrdersRequestHelper) (*voucher_proto.GetAllOrdersResponseHelper, error) {
-	// Get Redis client
 	redisClient := database.GetRedisClient()
 
 	// Get all order keys from Redis
@@ -104,7 +102,7 @@ func (s *Server) GetAllOrders(ctx context.Context, req *voucher_proto.GetAllOrde
 }
 
 func StartServer() {
-	println("Starting gRPC server...")
+	println("Starting voucher gRPC server...")
 	lis, err := net.Listen("tcp", ":50050")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

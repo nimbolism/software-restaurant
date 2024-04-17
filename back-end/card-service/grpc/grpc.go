@@ -27,7 +27,6 @@ type Server struct {
 	proto.UnimplementedCardServiceServer
 }
 
-// Function to get card information
 func (s *Server) GetCardInfo(ctx context.Context, req *proto.GetCardInfoRequest) (*proto.CardInfoResponse, error) {
 	authenticateUserResponse, err := AuthenticateUserService(ctx, req.JwtToken)
 	if err != nil {
@@ -67,7 +66,7 @@ func (s *Server) UpdateReserves(ctx context.Context, req *proto.UpdateReservesRe
 }
 
 func AuthenticateUserService(ctx context.Context, jwtToken string) (*user_proto.AuthenticateUserResponse, error) {
-	if err := InitializeGRPCClient(); err != nil {
+	if err := InitializeUserGRPCClient(); err != nil {
 		return nil, fmt.Errorf("failed to initialize gRPC client: %v", err)
 	}
 
@@ -80,7 +79,7 @@ func AuthenticateUser(c *fiber.Ctx) (*user_proto.AuthenticateUserResponse, error
 		return nil, c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "JWT cookie not found"})
 	}
 
-	if err := InitializeGRPCClient(); err != nil {
+	if err := InitializeUserGRPCClient(); err != nil {
 		log.Fatalf("Failed to initialize gRPC client: %v", err)
 	}
 
@@ -88,7 +87,7 @@ func AuthenticateUser(c *fiber.Ctx) (*user_proto.AuthenticateUserResponse, error
 }
 
 func StartServer() {
-	println("Starting gRPC server...")
+	println("Starting card gRPC server...")
 	lis, err := net.Listen("tcp", ":50020")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -100,16 +99,13 @@ func StartServer() {
 	}
 }
 
-func InitializeGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
+func InitializeUserGRPCClient() error {
 	if UserServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("user-service:50010", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		UserServiceClient = user_proto.NewUserServiceClient(conn)
 		userClientConn = conn
 	}

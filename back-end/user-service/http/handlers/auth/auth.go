@@ -18,30 +18,29 @@ func Login(username, password string) (string, error) {
 	var user models.User
 	db := postgresapp.DB
 
-	// Find user by username
+	// Finding by username
 	result := db.Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		return "", fmt.Errorf("failed to find user: %v", result.Error)
 	}
 
-	// Compare hashed password with the provided password
+	// Comparing passwords for logging in
 	err := utils.ComparePasswords(user.Password, password)
 	if err != nil {
 		return "", fmt.Errorf("incorrect password")
 	}
 
-	// Generate JWT token
+	// Generating a JWT token for 24 hours
 	expiry := time.Now().Add(24 * time.Hour)
 	token, err := GenerateJWT(username, expiry)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate JWT token: %v", err)
 	}
 
-	// Return JWT token on successful login
+	// Return JWT token
 	return token, nil
 }
 
-// LoginUserHandler handles HTTP requests to login a user
 func LoginUserHandler(c *fiber.Ctx) error {
 	var loginUser struct {
 		Username string `json:"username"`
@@ -51,7 +50,6 @@ func LoginUserHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to decode request body"})
 	}
 
-	// Login user
 	token, err := Login(loginUser.Username, loginUser.Password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
@@ -63,26 +61,24 @@ func LoginUserHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set JWT token as secure cookie"})
 	}
 
-	// Respond with success message
-	return c.SendString("Login successful")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "you have logged in"})
 }
 
 func GenerateJWT(username string, expiry time.Time) (string, error) {
-	// Retrieve the secret key from environment variables
+	// Get Secret Key from the environment
 	secretKey := os.Getenv("SECRET_KEY")
 	if secretKey == "" {
 		return "", fmt.Errorf("secret key not found in environment variables")
 	}
 
-	// Create the token
 	token := jwt.New(jwt.SigningMethodHS256)
 
-	// Set claims
+	// Set JWT claims
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = username
-	claims["exp"] = expiry.Unix() // Token expires based on the provided duration
+	claims["exp"] = expiry.Unix()
 
-	// Sign the token with the secret key
+	// Signing the token 
 	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", fmt.Errorf("failed to sign JWT token: %v", err)
@@ -112,7 +108,6 @@ func GetUsernameFromJWT(cookie string) (string, error) {
 	return username, nil
 }
 
-// CreateQRCode generates a QR code for a user
 func CreateQRCode(username string) ([]byte, error) {
 	// Generate a JWT for the user
 	expiry := time.Now().Add(72 * time.Hour)
@@ -121,7 +116,7 @@ func CreateQRCode(username string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to generate JWT token: %v", err)
 	}
 
-	// Generate QR code for the user
+	// Generate QR code for the user (using the api)
 	qrCode, err := qrcode.New(fmt.Sprintf("https://localhost:5050/user/api/qr/login?token=%s", token), qrcode.Medium)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create QR code: %v", err)
@@ -136,17 +131,12 @@ func CreateQRCode(username string) ([]byte, error) {
 	return png, nil
 }
 
-// LoginQRCodeHandler handles HTTP requests to verify QR code and set JWT token cookie for the user
 func LoginQRCodeHandler(c *fiber.Ctx) error {
-	// Extract token from URL parameter
 	token := c.Query("token")
-
-	// Verify the token
 	username, err := GetUsernameFromJWT(token)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 	}
-	// Generate JWT token
 	expiry := time.Now().Add(24 * time.Hour)
 	jwttoken, err := GenerateJWT(username, expiry)
 	if err != nil {
@@ -155,7 +145,5 @@ func LoginQRCodeHandler(c *fiber.Ctx) error {
 	if err := gutils.SetCookie(c, "jwt", jwttoken, expiry); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to set JWT token as secure cookie"})
 	}
-
-	// Respond with success message
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "user is logged in"})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "you have logged in"})
 }

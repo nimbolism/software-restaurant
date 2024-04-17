@@ -25,7 +25,6 @@ func FindCardByUserID(userID uint) (*models.Card, error) {
 	return &card, nil
 }
 
-// Function to check if the uploaded file is an image
 func IsImage(c *fiber.Ctx, fieldName string) bool {
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -46,8 +45,8 @@ func CompressImage(imageData []byte) ([]byte, error) {
 	quality := 100
 	maxDimension := 1280
 
+	// A loop to reduce image quality to 50KB or less
 	for {
-		// Resize image
 		if img.Bounds().Dx() > maxDimension || img.Bounds().Dy() > maxDimension {
 			img = imaging.Resize(img, maxDimension, maxDimension, imaging.Lanczos)
 		}
@@ -73,42 +72,41 @@ func CompressImage(imageData []byte) ([]byte, error) {
 func HandleImageUpload(c *fiber.Ctx, authenticateUserResponse *user_proto.AuthenticateUserResponse) error {
 	var body map[string]string
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to parse JSON body")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Unable to parse JSON body"})
 	}
 
-	// Get the Base64 image from the JSON body
+	// Get the image from body
 	base64Image, ok := body["image"]
 	if !ok {
-		return c.Status(fiber.StatusBadRequest).SendString("No image in JSON body")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No image in JSON body"})
 	}
 
+	// remove metadata of base64 image & decode it
 	base64Image = strings.SplitN(base64Image, ",", 2)[1]
-	// Decode the Base64 image
 	imageData, err := base64.StdEncoding.DecodeString(base64Image)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Unable to decode Base64 image")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Unable to decode Base64 image"})
 	}
 
 	// Compress the image to 50KB
 	compressedImageData, err := CompressImage(imageData)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to compress image")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to compress image"})
 	}
 
-	// Generate a secure filename
+	// Generate a secure filename using user_ID
 	filename := fmt.Sprintf("%d.jpg", authenticateUserResponse.UserId)
 
-	// Specify the directory where images will be stored (make sure this directory exists)
 	storageDir := "./uploads"
 	err = os.MkdirAll(storageDir, os.ModePerm)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to create storage directory")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create storage directory"})
 	}
 
-	// Save the image to a secure file
+	// Saving the image
 	err = os.WriteFile(filepath.Join(storageDir, filename), compressedImageData, 0644)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Failed to save image to file")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save image to file"})
 	}
 
 	return nil

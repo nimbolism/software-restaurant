@@ -2,7 +2,6 @@ package models
 
 import "gorm.io/gorm"
 
-// Order represents order data in the database
 type Order struct {
 	gorm.Model
 	UserID     uint       `gorm:"column:user_id"`

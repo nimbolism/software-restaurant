@@ -10,17 +10,16 @@ import (
 func StartServer() {
 	app := fiber.New()
 
-	// Create a group for routes starting with "/user"
+	// /food group for food service
 	foodGroup := app.Group("/food")
 
-	// Handler for the root endpoint
+	// root endpointn for testing
 	foodGroup.Get("/", func(c *fiber.Ctx) error {
-		// Set the content type header
 		c.Set("Content-Type", "text/plain")
-		// Return the response string
 		return c.SendString("Welcome to the Food Service!")
 	})
 
+	// /api group for apis of food service
 	foodApis := foodGroup.Group("/api")
 	foodApis.Post("/new/food", fooddb.FoodHandler)
 	foodApis.Post("/new/category", fooddb.CategoryHandler)
@@ -38,9 +37,8 @@ func StartServer() {
 	foodApis.Get("/sidedish", fooddb.GetSideDishes)
 
 
-	// Start Fiber HTTP server
-	println("Starting Fiber HTTP server...")
+	println("Starting food HTTP server...")
 	if err := app.Listen(":8030"); err != nil {
-		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
+		log.Fatalf("Failed to start food HTTP server: %v", err)
 	}
 }

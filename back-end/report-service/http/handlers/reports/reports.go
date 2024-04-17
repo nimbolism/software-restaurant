@@ -39,7 +39,7 @@ func GetAllUsers(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			fiber.Map{"error": fmt.Sprintf("failed to get users information: %v", err)})
 	}
-	return c.JSON(users)
+	return c.Status(fiber.StatusOK).JSON(users)
 }
 func GetAllOrders(c *fiber.Ctx) error {
 	cookie := gutils.GetCookie(c, "jwt")
@@ -60,7 +60,7 @@ func GetAllOrders(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			fiber.Map{"error": fmt.Sprintf("failed to get orders information: %v", err)})
 	}
-	return c.JSON(orders)
+	return c.Status(fiber.StatusOK).JSON(orders)
 }
 func GetAllOrdersByTime(c *fiber.Ctx) error {
 	cookie := gutils.GetCookie(c, "jwt")
@@ -100,7 +100,7 @@ func GetAllOrdersByTime(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(
 			fiber.Map{"error": fmt.Sprintf("failed to get orders information: %v", err)})
 	}
-	return c.JSON(orders)
+	return c.Status(fiber.StatusOK).JSON(orders)
 }
 func GetAllOrdersVoucher(c *fiber.Ctx) error {
 	cookie := gutils.GetCookie(c, "jwt")
@@ -122,5 +122,5 @@ func GetAllOrdersVoucher(c *fiber.Ctx) error {
 			fiber.Map{"error": fmt.Sprintf("failed to get orders information: %v", err)})
 	}
 
-	return c.JSON(orders)
+	return c.Status(fiber.StatusOK).JSON(orders)
 }

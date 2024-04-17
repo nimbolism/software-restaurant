@@ -9,25 +9,23 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// RabbitMQ struct holds the connection and channel information
 type RabbitMQ struct {
 	conn    *amqp.Connection
 	channel *amqp.Channel
 }
 
-// NewRabbitMQ initializes a new RabbitMQ connection
 func NewRabbitMQ() (*RabbitMQ, error) {
 	user := os.Getenv("RABBITMQ_DEFAULT_USER")
 	pass := os.Getenv("RABBITMQ_DEFAULT_PASS")
 	port := os.Getenv("RABBITMQ_PORT")
 	url := fmt.Sprintf("amqp://%s:%s@rabbitmq:%s/", user, pass, port)
 
-	var conn *amqp.Connection // Declare conn here
+	var conn *amqp.Connection
 
 	maxRetries := 10
 	for i := 0; i < maxRetries; i++ {
-		var err error              // Declare err here
-		conn, err = amqp.Dial(url) // Assign to conn
+		var err error              
+		conn, err = amqp.Dial(url) 
 		if err != nil {
 			log.Println("Failed to connect to RabbitMQ, retrying...")
 			time.Sleep(time.Second * 5)
@@ -37,7 +35,7 @@ func NewRabbitMQ() (*RabbitMQ, error) {
 		channel, err := conn.Channel()
 		if err != nil {
 			log.Println("Failed to open a channel, retrying...")
-			conn.Close() // Close the connection
+			conn.Close() 
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -56,7 +54,6 @@ func NewRabbitMQ() (*RabbitMQ, error) {
 	return nil, fmt.Errorf("failed to connect to RabbitMQ after %d retries", maxRetries)
 }
 
-// Close closes the RabbitMQ connection
 func (rmq *RabbitMQ) Close() {
 	if rmq.channel != nil {
 		rmq.channel.Close()
@@ -66,7 +63,6 @@ func (rmq *RabbitMQ) Close() {
 	}
 }
 
-// DeclareQueue declares a new queue on the RabbitMQ server
 func (rmq *RabbitMQ) DeclareQueue(queueName string) error {
 	_, err := rmq.channel.QueueDeclare(
 		queueName, // name
@@ -79,7 +75,6 @@ func (rmq *RabbitMQ) DeclareQueue(queueName string) error {
 	return err
 }
 
-// Publish sends a message to the specified queue
 func (rmq *RabbitMQ) Publish(queueName string, body []byte) error {
 	return rmq.channel.Publish(
 		"",        // exchange
@@ -92,7 +87,6 @@ func (rmq *RabbitMQ) Publish(queueName string, body []byte) error {
 		})
 }
 
-// Consume receives messages from the specified queue
 func (rmq *RabbitMQ) Consume(queueName string) (<-chan amqp.Delivery, error) {
 	return rmq.channel.Consume(
 		queueName, // queue

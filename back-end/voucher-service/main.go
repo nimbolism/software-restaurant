@@ -9,13 +9,10 @@ import (
 )
 
 func main() {
-	// Initialize Redis configuration
 	redisCfg, err := database.NewRedisConfig()
 	if err != nil {
 		log.Fatalf("Failed to create Redis configuration: %v", err)
 	}
-
-	// Initialize Redis database connection
 	redisClient, err := database.InitRedisDB(context.Background(), redisCfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize Redis database: %v", err)
@@ -26,7 +23,6 @@ func main() {
 		}
 	}()
 
-	// Start gRPC server
 	go grpc.StartServer()
 
 	// Keep the main function running

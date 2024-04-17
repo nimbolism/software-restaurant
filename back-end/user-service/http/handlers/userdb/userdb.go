@@ -15,7 +15,7 @@ import (
 )
 
 func CreateUser(username, password, confirmPassword string) error {
-	// Check if passwords match
+	// Check if password and confirm_password match
 	if password != confirmPassword {
 		return fmt.Errorf("passwords do not match")
 	}
@@ -39,7 +39,7 @@ func CreateUser(username, password, confirmPassword string) error {
 		return fmt.Errorf("failed to create qr code: %v", err)
 	}
 
-	// Create user
+	// Create the user
 	user := models.User{
 		Username: username,
 		Password: string(hashedPassword),
@@ -49,12 +49,9 @@ func CreateUser(username, password, confirmPassword string) error {
 		return fmt.Errorf("failed to insert user into database: %v", err)
 	}
 
-	fmt.Println("User created successfully. UserID:", user.ID)
-
 	return nil
 }
 
-// CreateUserHandler handles HTTP requests to create a new user
 func CreateUserHandler(c *fiber.Ctx) error {
 	var signUpUser struct {
 		Username        string `json:"username"`
@@ -69,9 +66,7 @@ func CreateUserHandler(c *fiber.Ctx) error {
 	if err := CreateUser(signUpUser.Username, signUpUser.Password, signUpUser.ConfirmPassword); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
-
-	// Respond with success message
-	return c.SendString("User created successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "User created successfully"})
 }
 
 func CompleteUserHandler(c *fiber.Ctx) error {
@@ -110,11 +105,9 @@ func CompleteUserHandler(c *fiber.Ctx) error {
 	if err := utils.SaveUser(db, &existingUser); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to complete user data"})
 	}
-
-	return c.SendString("User data completed successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "User data completed successfully"})
 }
 
-// ChangePasswordUserHandler handles HTTP requests to change user's password
 func ChangePasswordUserHandler(c *fiber.Ctx) error {
 	cookie := gutils.GetCookie(c, "jwt")
 	if cookie == "" {
@@ -162,8 +155,7 @@ func ChangePasswordUserHandler(c *fiber.Ctx) error {
 	if err := db.Save(&existingUser).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update password"})
 	}
-
-	return c.SendString("Password changed successfully")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": "Password changed successfully"})
 }
 
 func RecreateQRCodeLogin(c *fiber.Ctx) error {
@@ -220,7 +212,6 @@ func GetUserInfo(c *fiber.Ctx) error {
 		"qr_code":       existingUser.QRCode,
 		"phone_number":  existingUser.PhoneNumber,
 		"national_code": existingUser.NationalCode,
-		// Add other fields you want to include
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"user": userInfo})

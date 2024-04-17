@@ -17,11 +17,6 @@ func SetCookie(c *fiber.Ctx, name, value string, expiry time.Time) error {
 		// SameSite: "None",
 	})
 
-	// Check if the cookie was set successfully
-	// if c.Cookies(name) != value {
-	// 	return fmt.Errorf("failed to set cookie: %s", name)
-	// }
-
 	return nil
 }
 

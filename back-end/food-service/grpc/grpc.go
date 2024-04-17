@@ -89,7 +89,7 @@ func (s *Server) GetSideDishDetailsByName(ctx context.Context, req *proto.SideDi
 }
 
 func StartServer() {
-	println("Starting gRPC server...")
+	println("Starting food gRPC server...")
 	lis, err := net.Listen("tcp", ":50030")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -101,16 +101,13 @@ func StartServer() {
 	}
 }
 
-func InitializeGRPCClient() error {
-	// Set up a connection to the gRPC server if not already initialized
+func InitializeCardGRPCdClient() error {
 	if CardServiceClient == nil {
-		// Create a connection to the gRPC server
 		conn, err := grpc.NewClient("card-service:50020", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to gRPC server: %v", err)
 		}
 
-		// Create a client for the UserService
 		CardServiceClient = card_proto.NewCardServiceClient(conn)
 		cardClientConn = conn
 	}
