@@ -76,7 +76,7 @@ services:
       - postgres-access
     restart: unless-stopped
 
-  # Order Service
+  # Voucher Service
   voucher-service:
     container_name: voucher-service-container
     build:
@@ -92,6 +92,21 @@ services:
     networks:
       - backend
       - redis-access
+    restart: unless-stopped
+
+  # Report Service
+  report-service:
+    container_name: report-service-container
+    build:
+      context: .
+      dockerfile: back-end/report-service/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - order-service
+      - user-service
+    networks:
+      - backend
     restart: unless-stopped
 
   # Nginx Service

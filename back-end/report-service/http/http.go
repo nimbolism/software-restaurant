@@ -10,25 +10,26 @@ import (
 func StartServer() {
 	app := fiber.New()
 
-	// Create a group for routes starting with "/user"
-	userGroup := app.Group("/user")
+	// Create a group for routes starting with "/report"
+	reportGroup := app.Group("/report")
 
 	// Handler for the root endpoint
-	userGroup.Get("/", func(c *fiber.Ctx) error {
+	reportGroup.Get("/", func(c *fiber.Ctx) error {
 		// Set the content type header
 		c.Set("Content-Type", "text/plain")
 		// Return the response string
-		return c.SendString("Welcome to the User Service!")
+		return c.SendString("Welcome to the Report Service!")
 	})
 
-	userApis := userGroup.Group("/api")
-	userApis.Get("/users", reports.GetAllUsers)
-	userApis.Get("/orders", reports.GetAllOrders)
-	userApis.Post("/orders", reports.GetAllOrdersByTime)
+	reportApis := reportGroup.Group("/api")
+	reportApis.Get("/users", reports.GetAllUsers)
+	reportApis.Get("/orders", reports.GetAllOrders)
+	reportApis.Post("/orders", reports.GetAllOrdersByTime)
+	reportApis.Get("/vouchers", reports.GetAllOrdersVoucher)
 
 	// Start Fiber HTTP server
 	println("Starting Fiber HTTP server...")
-	if err := app.Listen(":8010"); err != nil {
+	if err := app.Listen(":8060"); err != nil {
 		log.Fatalf("Failed to start Fiber HTTP server: %v", err)
 	}
 }

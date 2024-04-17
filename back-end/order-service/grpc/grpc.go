@@ -41,7 +41,7 @@ type Server struct {
 func (s *Server) GetAllOrders(ctx context.Context, req *proto.GetAllOrdersRequest) (*proto.GetAllOrdersResponse, error) {
 	db := postgresapp.DB
 	var orders []models.Order
-	if err := db.Find(&orders).Error; err != nil {
+	if err := db.Preload("Foods").Preload("SideDishes").Find(&orders).Error; err != nil {
 		return nil, status.Error(
 			codes.NotFound, fmt.Sprintf("could not find orders: %v", err),
 		)
@@ -75,7 +75,7 @@ func (s *Server) GetAllOrdersByUsername(ctx context.Context, req *proto.GetAllOr
 func (s *Server) GetAllOrdersBetweenTimestamps(ctx context.Context, req *proto.GetAllOrdersBetweenTimestampsRequest) (*proto.GetAllOrdersResponse, error) {
 	db := postgresapp.DB
 	var orders []models.Order
-	if err := db.Where("created_at BETWEEN ? AND ?", req.StartTime.AsTime(), req.EndTime.AsTime()).Find(&orders).Error; err != nil {
+	if err := db.Preload("Foods").Preload("SideDishes").Where("created_at BETWEEN ? AND ?", req.StartTime.AsTime(), req.EndTime.AsTime()).Find(&orders).Error; err != nil {
 		return nil, status.Error(
 			codes.NotFound, fmt.Sprintf("could not find orders: %v", err),
 		)

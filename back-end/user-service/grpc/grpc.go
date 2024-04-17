@@ -79,7 +79,7 @@ func (s *Server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest)
 	}
 
 	var userData []*proto.UserData
-	for _, user := range userData {
+	for _, user := range users {
 		userData = append(userData, &proto.UserData{
 			Username:     user.Username,
 			Email:        user.Email,
